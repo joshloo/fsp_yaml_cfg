@@ -103,9 +103,6 @@ class CLogicalExpression:
     def __init__(self):
         self.index    = 0
         self.string   = ''
-        self.dictVariable = {}
-        self.parenthesisOpenSet   =  '('
-        self.parenthesisCloseSet  =  ')'
 
     def errExit(self, err = ''):
         print ("ERROR: Express parsing for:")
@@ -113,7 +110,7 @@ class CLogicalExpression:
         print ("       %s^" % (' ' * self.index))
         if err:
             print ("INFO : %s" % err)
-        raise Exception ("Logical expression parsing error!")
+        raise SystemExit
 
     def getNonNumber (self, n1, n2):
         if not n1.isdigit():
@@ -146,22 +143,17 @@ class CLogicalExpression:
             else:
                 return
 
+    def normNumber (self, val):
+        return True if val else False
+
     def getNumber(self, var):
         var = var.strip()
         if   re.match('^0x[a-fA-F0-9]+$', var):
             value = int(var, 16)
-        elif re.match('^0b[01]+$', var):
-            value = int(var, 2)
         elif re.match('^[+-]?\d+$', var):
             value = int(var, 10)
         else:
-            self.errExit("Invalid value '%s'" % var)
-        return value
-
-    def getVariable(self, var):
-        value = self.dictVariable.get(var, None)
-        if value == None:
-            self.errExit("Unrecognized variable '%s'" % var)
+            value = None
         return value
 
     def parseValue(self):
@@ -174,112 +166,134 @@ class CLogicalExpression:
                 self.moveNext()
             else:
                 break
-
-        if len(var):
-          if var[0].isdigit():
-              value = self.getNumber(var)
-          else:
-              value = self.getVariable(var)
+        val = self.getNumber(var)
+        if val is None:
+            value = var
         else:
-          self.errExit('Invalid number or variable found !')
-
-        return int(value)
+            value = "%d" % val
+        return value
 
     def parseSingleOp(self):
         self.skipSpace()
-        char = self.getCurr()
-        if char == '~':
-            self.moveNext()
-            return ~self.parseBrace()
+        if re.match('^NOT\W', self.getCurr(-1)):
+            self.moveNext(3)
+            op  = self.parseBrace()
+            val = self.getNumber (op)
+            if val is None:
+                self.errExit ("'%s' is not a number" % op)
+            return "%d" % (not self.normNumber(int(op)))
         else:
             return self.parseValue()
 
     def parseBrace(self):
         self.skipSpace()
         char = self.getCurr()
-        parenthesisType = self.parenthesisOpenSet.find(char)
-        if parenthesisType >= 0:
+        if char == '(':
             self.moveNext()
             value = self.parseExpr()
             self.skipSpace()
-            if self.getCurr() != self.parenthesisCloseSet[parenthesisType]:
-                self.errExit ("No closing brace !")
+            if self.getCurr() != ')':
+                self.errExit ("Expecting closing brace or operator")
             self.moveNext()
-            if parenthesisType   == 1:  # [ : Get content
-                value = self.getContent(value)
-            elif parenthesisType == 2:  # { : To  address
-                value = self.toAddress(value)
-            elif parenthesisType == 3:  # < : To  offset
-                value = self.toOffset(value)
             return value
         else:
-            return self.parseSingleOp()
+            value = self.parseSingleOp()
+            return value
 
-    def parseMul(self):
-        values = [self.parseBrace()]
-        ops    = ['*']
+    def parseCompare(self):
+        value = self.parseBrace()
         while True:
             self.skipSpace()
             char = self.getCurr()
-            if char == '*':
+            if char in ['<', '>']:
                 self.moveNext()
-                values.append(self.parseBrace())
-                ops.append(char)
-            elif char == '/':
-                self.moveNext()
-                values.append(self.parseBrace())
-                ops.append(char)
+                next = self.getCurr()
+                if next == '=':
+                    op = char + next
+                    self.moveNext()
+                else:
+                    op = char
+                result = self.parseBrace()
+                test = self.getNonNumber(result, value)
+                if test is None:
+                    value = "%d" % self.normNumber(eval (value + op + result))
+                else:
+                    self.errExit ("'%s' is not a valid number for comparision" % test)
+            elif char in ['=', '!']:
+                op = self.getCurr(2)
+                if op in ['==', '!=']:
+                    self.moveNext(2)
+                    result = self.parseBrace()
+                    test = self.getNonNumber(result, value)
+                    if test is None:
+                        value = "%d" % self.normNumber((eval (value + op + result)))
+                    else:
+                        value = "%d" % self.normNumber(eval ("'" + value + "'" + op + "'" + result + "'"))
+                else:
+                    break
             else:
                 break
-        value  = 1
-        for idx, each in enumerate(values):
-            if ops[idx] == '*':
-                value  *= each
-            else:
-                value //= each
         return value
 
-    def parseAndOr(self):
-        value  = self.parseMul()
+    def parseAnd(self):
+        value = self.parseCompare()
+        while True:
+            self.skipSpace()
+            if re.match('^AND\W', self.getCurr(-1)):
+                self.moveNext(3)
+                result = self.parseCompare()
+                test = self.getNonNumber(result, value)
+                if test is None:
+                    value = "%d" % self.normNumber(int(value) & int(result))
+                else:
+                    self.errExit ("'%s' is not a valid op number for AND" % test)
+            else:
+                break
+        return value
+
+    def parseOrXor(self):
+        value  = self.parseAnd()
         op     = None
         while True:
             self.skipSpace()
-            char = self.getCurr()
-            if char == '&':
-                self.moveNext()
-                value &= self.parseMul()
-            elif char == '|':
-                div_index = self.index
-                self.moveNext()
-                value |= self.parseMul()
+            op = None
+            if re.match('^XOR\W', self.getCurr(-1)):
+                self.moveNext(3)
+                op = '^'
+            elif re.match('^OR\W', self.getCurr(-1)):
+                self.moveNext(2)
+                op = '|'
             else:
                 break
-
+            if op:
+                result = self.parseAnd()
+                test = self.getNonNumber(result, value)
+                if test is None:
+                    value = "%d" % self.normNumber(eval (value + op + result))
+                else:
+                    self.errExit ("'%s' is not a valid op number for XOR/OR" % test)
         return value
 
-    def parseAddMinus(self):
-        values = [self.parseAndOr()]
-        while True:
-            self.skipSpace()
-            char = self.getCurr()
-            if char == '+':
-                self.moveNext()
-                values.append(self.parseAndOr())
-            elif char == '-':
-                self.moveNext()
-                values.append(-1 * self.parseAndOr())
-            else:
-                break
-        return sum(values)
-
     def parseExpr(self):
-        return self.parseAddMinus()
+        return self.parseOrXor()
 
-    def evaluateExpress (self, Expr, VarDict = {}):
-        self.index        = 0
-        self.string       = Expr
-        self.dictVariable = VarDict
-        Result = self.parseExpr()
+    def getResult(self):
+        value = self.parseExpr()
+        self.skipSpace()
+        if not self.isLast():
+            self.errExit ("Unexpected character found '%s'" % self.getCurr())
+        test = self.getNumber(value)
+        if test is None:
+            self.errExit ("Result '%s' is not a number" % value)
+        return int(value)
+
+    def evaluateExpress (self, Expr):
+        self.index     = 0
+        self.string    = Expr
+        if self.getResult():
+            Result = True
+        else:
+            Result = False
         return Result
 
 
@@ -611,7 +625,7 @@ EndList
         ExpExpr = self.ExpandPcds(Expr)
         ExpExpr = self.ExpandMacros(ExpExpr)
         LogExpr = CLogicalExpression()
-        Result  = LogExpr.evaluateExpress (ExpExpr, self._VarDict)
+        Result  = LogExpr.evaluateExpress (ExpExpr)
         if self.Debug:
             print ("INFO : Eval Express [%s] : %s" % (Expr, Result))
         return Result
@@ -903,7 +917,7 @@ EndList
                                 IncludeFilePath = os.path.join(os.path.dirname(self._DscFile), Remaining)
                                 if not os.path.exists(IncludeFilePath):
                                     # Relative to repository to find dsc in common platform
-                                    IncludeFilePath = os.path.join(os.path.dirname (os.path.realpath(__file__)), "../..", Remaining)
+                                    IncludeFilePath = os.path.join(os.path.dirname (self._DscFile), "..", Remaining)
 
                                 try:
                                     IncludeDsc  = open(IncludeFilePath, "r")

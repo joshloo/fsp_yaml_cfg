@@ -509,7 +509,8 @@ class CFG_YAML():
                         # check for duplicated keys at same level
                         temp_chk[key] = 1
                     else:
-                        raise Exception ("Duplicated item '%s:%s' found !" % (parent_name, key))
+                        #raise Exception ("Duplicated item '%s:%s' found !" % (parent_name, key))
+                        pass
 
                 curr[key] = child
                 if self.var_dict is None and key == CFG_YAML.VARIABLE:
@@ -1643,13 +1644,14 @@ class CGenCfgData:
             bits_length = ' : %d' % bits_length
 
         #return "\n/** %s%s%s**/\n  %s%s%s%s;\n" % (name_line, help_line, option_line, type, ' ' * space1, name, bits_length)
-        return "\n  /* %s */\n  %s%s%s%s;\n" % (name_line.strip(), type, ' ' * space1, name, bits_length)
+        return "\n  /* Offset %s: %s */\n  %s%s%s%s;\n" % (offset_str, name_line.strip(), type, ' ' * space1, name, bits_length)
 
 
     def create_struct (self, cname, top, struct_dict):
         index = 0
         last  = ''
         lines = []
+        off_base = -1
         lines.append ('\ntypedef struct {\n')
         for field in top:
             if field[0] == '$':
@@ -1702,12 +1704,14 @@ class CGenCfgData:
                 else:
                     length = 4
             offset = item['offset'] // 8
+            if off_base == -1:
+                off_base = offset
             struct = item.get('struct', '')
             name   = field
             prompt = item['name']
             help   = item['help']
             option = item['option']
-            line = self.create_field (item, name, length, offset, struct, prompt, help, option, bit_length)
+            line = self.create_field (item, name, length, offset - off_base, struct, prompt, help, option, bit_length)
             lines.append ('  %s' % line)
             last = struct
 

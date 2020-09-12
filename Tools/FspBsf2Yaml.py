@@ -40,6 +40,7 @@ class CFspDsc2Yaml ():
         self.prefix       = ''
         self.unused_idx   = 0
         self.offset       = 0
+        self.base_offset  = 0
 
     def load_config_data_from_dsc (self, file_name):
         """
@@ -76,6 +77,42 @@ class CFspDsc2Yaml ():
         else:
             return '>\n   ' + '\n   '.join ([indent + i.lstrip() for i in lines])
 
+    def reformat_pages (self, val):
+        # Convert XXX:YYY into XXX::YYY format for page definition
+        parts = val.split(',')
+        if len(parts) <= 1:
+            return val
+
+        new_val = []
+        for each in parts:
+            nodes = each.split(':')
+            if len(nodes) == 2:
+               each = '%s::%s' % (nodes[0], nodes[1])
+            new_val.append(each)
+        ret = ','.join (new_val)
+        return ret
+
+    def reformat_struct_value (self, utype, val):
+        # Convert DSC UINT16/32/64 array into new format by
+        # adding prefix 0:0[WDQ] to provide hint to the array format
+        if utype in ['UINT16', 'UINT32', 'UINT64']:
+            if val and val[0] == '{' and val[-1] == '}':
+                if utype == 'UINT16':
+                    unit = 'W'
+                elif utype == 'UINT32':
+                    unit = 'D'
+                else:
+                    unit = 'Q'
+                val = '{ 0:0%s, %s }' % (unit, val[1:-1])
+        return val
+
+    def process_config (self, cfg):
+        if 'page' in cfg:
+            cfg['page'] = self.reformat_pages (cfg['page'])
+
+        if 'struct' in cfg:
+            cfg['value'] = self.reformat_struct_value (cfg['struct'], cfg['value'])
+
     def parse_dsc_line (self, dsc_line, config_dict, init_dict, include):
         """
         Parse a line in DSC and update the config dictionary accordingly.
@@ -103,9 +140,9 @@ class CFspDsc2Yaml ():
                 if self.offset != offset:
                     if offset > self.offset:
                         init_dict['padding'] = offset - self.offset
-                    else:
-                        raise Exception ('Offset cannot go backwards at %s !' % config_dict['cname'] )
-                self.offset = offset + int (length, 0)
+                    elif offset == 0:
+                        self.base_offset = self.offset
+                self.offset = offset + self.base_offset + int (length, 0)
             return True
 
         match = re.match("^\s*#\s+!([<>])\s+include\s+(.+)", dsc_line)
@@ -264,7 +301,6 @@ class CFspDsc2Yaml ():
                     new_cfg['cname'] = '@$STRUCT'
                     cfgs[-1].clear ()
                     cfgs[-1]['cname'] = cname
-
                     cfgs.append(new_cfg)
 
                 if cfgs and cfgs[-1]['cname'] == 'CFGHDR' and config_dict['cname'][0] == '<':
@@ -274,6 +310,7 @@ class CFspDsc2Yaml ():
                         cfgs[-1]['expand'] = cfgs[-1]['expand'].replace('_$FFF_', '0x%s' % config_dict['cname'].split(':')[1][4:])
                     cfgs.insert (-1, config_dict)
                 else:
+                    self.process_config (config_dict)
                     cfgs.append (config_dict)
 
                 config_dict = dict(init_dict)
@@ -284,7 +321,10 @@ class CFspDsc2Yaml ():
         """
         Fix up some variable definitions for SBL.
         """
-        return
+        key = each
+        val = self.gen_cfg_data._MacroDict[each]
+        return key, val
+
 
     def template_fixup (self, tmp_name, tmp_list):
         """
@@ -350,7 +390,8 @@ class CFspDsc2Yaml ():
         """
         Output template block into a line list.
         """
-        self.offset  = 0
+        self.offset      = 0
+        self.base_offset = 0
         start, end   = self.get_section_range ('PcdsDynamicVpd.Tmp')
         bsf_temp_dict, temp_file_dict = self.process_template_lines (self.gen_cfg_data._DscLines[start:end])
         template_dict = dict()
@@ -387,7 +428,8 @@ class CFspDsc2Yaml ():
         """
         Output config block into a line list.
         """
-        self.offset  = 0
+        self.offset      = 0
+        self.base_offset = 0
         start, end = self.get_section_range ('PcdsDynamicVpd.Upd')
         cfgs = self.process_option_lines (self.gen_cfg_data._DscLines[start:end])
         self.config_fixup (cfgs)
@@ -545,9 +587,13 @@ def main():
     if os.path.isdir(yaml_file):
         yaml_file = os.path.join(yaml_file, get_fsp_name_from_path(bsf_file) + '.yaml')
 
-    dsc_file  = os.path.splitext(yaml_file)[0] + '.dsc'
+    if bsf_file.endswith('.dsc'):
+        dsc_file = bsf_file
+        bsf_file = ''
+    else:
+        dsc_file  = os.path.splitext(yaml_file)[0] + '.dsc'
+        bsf_to_dsc  (bsf_file, dsc_file)
 
-    bsf_to_dsc  (bsf_file, dsc_file)
     dsc_to_yaml (dsc_file, yaml_file)
 
     print ("'%s' was created successfully!" % yaml_file)

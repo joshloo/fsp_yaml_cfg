@@ -15,14 +15,12 @@ import sys
 
 
 def get_fsp_name_from_path (bsf_file):
-    name = ''
+    name = 'Soc'
     parts = bsf_file.split(os.sep)
     for part in parts:
         if part.endswith ('FspBinPkg'):
             name = part[:-9]
             break
-    if not name:
-        raise Exception ('Could not get FSP name from file path!')
     return name
 
 print (get_fsp_name_from_path (sys.argv[1]))
