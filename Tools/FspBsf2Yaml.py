@@ -118,14 +118,9 @@ class CFspDsc2Yaml ():
         Parse a line in DSC and update the config dictionary accordingly.
         """
         init_dict.clear ()
-        if dsc_line.startswith('gCfgData') or dsc_line.startswith('gPlatformFspPkgTokenSpaceGuid'):
-            if dsc_line[8] == '.':
-                start = 9
-            elif dsc_line[29] == '.':
-                start = 30
-            else:
-                raise Exception ("Unexpected format for dsc line '%s' !" % dsc_line)
-            match = self.cfg_reg_exp.match(dsc_line[start:])
+        match = re.match('g(CfgData|\w+FspPkgTokenSpaceGuid)\.(.+)', dsc_line)
+        if match:
+            match = self.cfg_reg_exp.match(match.group(2))
             if not match:
                 return False
             config_dict['cname']  = self.prefix + match.group(1)
@@ -136,13 +131,14 @@ class CFspDsc2Yaml ():
             if match.group(2) == '*':
                 self.offset += int (length, 0)
             else:
-                offset = int (match.group(2), 0)
+                org_offset = int (match.group(2), 0)
+                if org_offset == 0:
+                    self.base_offset = self.offset
+                offset = org_offset + self.base_offset
                 if self.offset != offset:
                     if offset > self.offset:
                         init_dict['padding'] = offset - self.offset
-                    elif offset == 0:
-                        self.base_offset = self.offset
-                self.offset = offset + self.base_offset + int (length, 0)
+                self.offset = offset + int (length, 0)
             return True
 
         match = re.match("^\s*#\s+!([<>])\s+include\s+(.+)", dsc_line)
@@ -283,7 +279,6 @@ class CFspDsc2Yaml ():
         for line in lines:
             ret = self.parse_dsc_line (line, config_dict, init_dict, include)
             if ret:
-
                 if 'padding' in init_dict:
                     num = init_dict['padding']
                     init_dict.clear()

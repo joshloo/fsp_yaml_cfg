@@ -561,7 +561,8 @@ class CGenCfgData:
     STRUCT         = '$STRUCT'
     bits_width     = {'b':1, 'B':8, 'W':16, 'D':32, 'Q':64}
     builtin_option = {'$EN_DIS' : [('0', 'Disable'), ('1', 'Enable')]}
-    exclude_struct = ['GPIO_GPP_*', 'GPIO_CFG_DATA', 'GpioConfPad*',  'GpioPinConfig',
+    exclude_struct = ['FSP_UPD_HEADER', 'FSPT_ARCH_UPD', 'FSPM_ARCH_UPD', 'FSPS_ARCH_UPD'
+                      'GPIO_GPP_*', 'GPIO_CFG_DATA', 'GpioConfPad*',  'GpioPinConfig',
                       'BOOT_OPTION*', 'PLATFORMID_CFG_DATA', '\w+_Half[01]']
     include_tag    = ['GPIO_CFG_DATA']
     keyword_set    = set(['name', 'type', 'option', 'help', 'length', 'value', 'order', 'struct', 'condition'])
@@ -645,12 +646,13 @@ class CGenCfgData:
         cap  = True
         if '_' in input:
             input = input.lower()
-        for each in input:
+        for idx, each in enumerate(input):
           if each == '_':
               cap = True
               continue
           elif cap:
-              each = each.upper()
+              if not (len(input) > idx+1 and input[idx+1] == '_'):
+                  each = each.upper()
               cap  = False
           name = name + each
 
@@ -1289,12 +1291,18 @@ class CGenCfgData:
         self.set_field_value(self._cfg_tree, bin_data, True)
 
 
-    def generate_binary_array (self):
-        return self.get_field_value()
+    def generate_binary_array (self, path = ''):
+        if path == '':
+            top =None
+        else:
+            top  = self.locate_cfg_item (path)
+            if not top:
+                raise Exception("Invalid configuration path '%s' !" % path)
+        return self.get_field_value(top)
 
-    def generate_binary (self, bin_file_name):
+    def generate_binary (self, bin_file_name, path = ''):
         bin_file = open(bin_file_name, "wb")
-        bin_file.write (self.generate_binary_array ())
+        bin_file.write (self.generate_binary_array (path))
         bin_file.close()
         return 0
 
@@ -1419,24 +1427,31 @@ class CGenCfgData:
 
     def write_cfg_header_file (self, hdr_file_name, tag_mode, tag_dict, struct_list):
         lines = []
-        lines.append ('\n\n')
+        lines.append ('\n')
+        is_fsp   = True if (tag_mode & 0x80) else False
+        if is_fsp:
+            lines.append ('#include <FspUpd.h>\n')
+
+        tag_mode = tag_mode & 0x7F
         tag_list = sorted(list(tag_dict.items()), key=lambda x: x[1])
         for tagname, tagval in tag_list:
             if (tag_mode == 0 and tagval >= 0x100) or (tag_mode == 1 and tagval < 0x100):
                 continue
             lines.append ('#define    %-30s 0x%03X\n' % ('CDATA_%s_TAG' % tagname[:-9], tagval))
-        lines.append ('\n\n')
+
+        lines.append ('\n#pragma pack(1)\n')
 
         name_dict = {}
         new_dict  = {}
         for each in struct_list:
             if (tag_mode == 0 and each['tag'] >= 0x100) or (tag_mode == 1 and each['tag'] < 0x100):
                 continue
-            new_dict[each['name']]  = (each['alias'], each['count'])
+            new_dict[each['name']]  = (each['alias'], each['count'], each['exclude'])
             if each['alias'] not in name_dict:
                 name_dict[each['alias']] = 1
                 lines.extend(self.create_struct (each['alias'], each['node'], new_dict))
 
+        lines.append ('#pragma pack()\n\n')
 
         self.write_header_file (lines, hdr_file_name)
 
@@ -1449,12 +1464,8 @@ class CGenCfgData:
         lines = []
         lines.append ("%s\n"   % get_copyright_header(type))
         lines.append ("#ifndef __%s__\n"   % file_name_def)
-        lines.append ("#define __%s__\n\n" % file_name_def)
-        if type == 'h':
-            lines.append ("#pragma pack(1)\n\n")
+        lines.append ("#define __%s__\n" % file_name_def)
         lines.extend (txt_body)
-        if type == 'h':
-            lines.append ("#pragma pack()\n\n")
         lines.append ("#endif\n")
 
         # Don't rewrite if the contents are the same
@@ -1652,6 +1663,11 @@ class CGenCfgData:
         last  = ''
         lines = []
         off_base = -1
+
+        if cname in struct_dict:
+            if struct_dict[cname][2]:
+                return []
+
         lines.append ('\ntypedef struct {\n')
         for field in top:
             if field[0] == '$':
@@ -1719,8 +1735,26 @@ class CGenCfgData:
 
         return lines
 
+    def write_fsp_sig_header_file (self, hdr_file_name):
+        hdr_fd = open (hdr_file_name, 'w')
+        hdr_fd.write ("%s\n"   % get_copyright_header('h'))
+        hdr_fd.write ("#ifndef __FSPUPD_H__\n"
+                      "#define __FSPUPD_H__\n\n"
+                      "#include <FspEas.h>\n\n"
+                      "#pragma pack(1)\n\n")
+        lines = []
+        for fsp_comp in 'TMS':
+            top = self.locate_cfg_item ('FSP%s_UPD' % fsp_comp)
+            if not top:
+                 raise Exception ('Could not find FSP UPD definition !')
+            bins = self.get_field_value(top)
+            lines.append("#define FSP%s_UPD_SIGNATURE    0x%016X  /* '%s' */\n\n" % (fsp_comp, bytes_to_value(bins[:8]), bins[:8].decode()))
+        hdr_fd.write (''.join(lines))
+        hdr_fd.write ("#pragma pack()\n\n"
+                      "#endif\n")
+        hdr_fd.close ()
 
-    def create_header_file (self, hdr_file_name, com_hdr_file_name = ''):
+    def create_header_file (self, hdr_file_name, com_hdr_file_name = '', path = ''):
         def _build_header_struct (name, cfgs, level):
             if CGenCfgData.STRUCT in cfgs:
                 if 'CfgHeader' in cfgs:
@@ -1732,15 +1766,30 @@ class CGenCfgData:
                         tag_curr[0] = tag_val
                 struct_dict[name] = (level, tag_curr[0], cfgs)
 
+        if path == 'FSP_SIG':
+            self.write_fsp_sig_header_file (hdr_file_name)
+            return
+
         tag_curr      = [0]
         tag_dict      = {}
         struct_dict   = {}
-        self.traverse_cfg_tree (_build_header_struct)
+
+        if path == '':
+            top = None
+        else:
+            top = self.locate_cfg_item (path)
+            if not top:
+                raise Exception("Invalid configuration path '%s' !" % path)
+            _build_header_struct (path, top, 0)
+        self.traverse_cfg_tree (_build_header_struct, top)
 
         if tag_curr[0] == 0:
             hdr_mode = 2
         else:
             hdr_mode = 1
+
+        if re.match('FSP[TMS]_UPD', path):
+            hdr_mode |= 0x80
 
         # filter out the items to be built for tags and structures
         struct_list = []
@@ -1753,9 +1802,9 @@ class CGenCfgData:
                         if each not in CGenCfgData.include_tag:
                             del tag_dict[each]
                     break
-            if not match:
-                struct_list.append ({'name':each, 'alias':'', 'count' : 0, 'level':struct_dict[each][0],
-                                     'tag':struct_dict[each][1], 'node':struct_dict[each][2]})
+
+            struct_list.append ({'name':each, 'alias':'', 'count' : 0, 'level':struct_dict[each][0],
+                                 'tag':struct_dict[each][1], 'node':struct_dict[each][2], 'exclude': True if match else False})
 
         # sort by level so that the bottom level struct will be build first to satisfy dependencies
         struct_list = sorted(struct_list, key=lambda x: x['level'], reverse=True)
@@ -1842,6 +1891,12 @@ def main():
         dlt_file   = ''
     else:
         raise Exception ("ERROR: Invalid parameter '%s' !" % sys.argv[2])
+
+    yml_scope = ''
+    if '@' in yml_file:
+        parts = yml_file.split('@')
+        yml_file  = parts[0]
+        yml_scope = parts[1]
 
     if command == "GENDLT" and yml_file.endswith('.dlt'):
         # It needs to expand an existing DLT file
@@ -1936,7 +1991,7 @@ def main():
                 gen_cfg_data.load_default_from_bin (new_data)
                 gen_cfg_data.override_default_value(dlt_file)
 
-        gen_cfg_data.generate_binary(out_file)
+        gen_cfg_data.generate_binary(out_file, yml_scope)
 
     elif command == "GENDLT":
         gen_cfg_data.generate_delta_file (out_file, cfg_bin_file, cfg_bin_file2)
@@ -1948,7 +2003,7 @@ def main():
             com_out_file = out_files[1].strip()
         else:
             com_out_file = ''
-        gen_cfg_data.create_header_file(brd_out_file, com_out_file)
+        gen_cfg_data.create_header_file(brd_out_file, com_out_file, yml_scope)
 
     elif command == "GENINC":
         gen_cfg_data.generate_data_inc_file(out_file)
@@ -1964,4 +2019,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-
