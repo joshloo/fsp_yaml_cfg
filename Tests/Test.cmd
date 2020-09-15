@@ -3,7 +3,7 @@
 set WORK_DIR=%~dp0..
 set FSP_DIR=%WORK_DIR%\IntelFsp
 set OUT_DIR=%WORK_DIR%\Output
-set BSF2YAML=%WORK_DIR%\Tools\FspBsf2Yaml.py
+set BSF2YAML=%WORK_DIR%\Tools\FspDscBsf2Yaml.py
 set SOC_NAME=%WORK_DIR%\Tools\ExtractName.py
 set GEN_CFG=%WORK_DIR%\Tools\GenCfgData.py
 
@@ -43,7 +43,7 @@ python %GEN_CFG% GENBIN %OUT_DIR%\%FSP_NAME%.pkl@%UPD_KEY%UPD_S %OUT_DIR%\FspsUp
 python %GEN_CFG% GENBIN %OUT_DIR%\%FSP_NAME%.pkl                %OUT_DIR%\FspUpd.bin
 
 @echo  Generating delta
-python %GEN_CFG% GENDLT %OUT_DIR%\%FSP_NAME%.pkl;%OUT_DIR%\FspUpd.bin  %OUT_DIR%\%FSP_NAME%.dlt -D FSP=1 -D FULL=1
+python %GEN_CFG% GENDLT %OUT_DIR%\%FSP_NAME%.pkl;%OUT_DIR%\FspUpd.bin  %OUT_DIR%\%FSP_NAME%.dlt -D FULL=1
 
 
 echo.
