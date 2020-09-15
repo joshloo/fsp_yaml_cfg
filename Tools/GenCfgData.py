@@ -1330,6 +1330,21 @@ class CGenCfgData:
         return result
 
 
+    def detect_fsp (self):
+        cfg_segs = self.get_cfg_segment ()
+        if len(cfg_segs) == 3:
+            fsp = True
+            for idx, seg in enumerate(cfg_segs):
+                if not seg[0].endswith('UPD_%s' % 'TMS'[idx]):
+                    fsp = False
+                    break
+        else:
+            fsp = False
+        if fsp:
+            self.set_mode ('FSP')
+        return fsp
+
+
     def get_cfg_segment (self):
         def _get_cfg_segment (name, cfgs, level):
             if 'indx' not in cfgs:
@@ -1557,8 +1572,7 @@ class CGenCfgData:
     def write_cfg_header_file (self, hdr_file_name, tag_mode, tag_dict, struct_list):
         lines = []
         lines.append ('\n')
-        is_fsp   = True if self.get_mode() == 'FSP' else False
-        if is_fsp:
+        if self.get_mode() == 'FSP':
             lines.append ('#include <FspUpd.h>\n')
 
         tag_mode = tag_mode & 0x7F
@@ -2016,9 +2030,6 @@ def main():
     if argc >= 5 and gen_cfg_data.parse_macros (sys.argv[4:]) != 0:
         raise Exception ("ERROR: Macro parsing failed !")
 
-    if 'FSP' in gen_cfg_data._macro_dict:
-        gen_cfg_data.set_mode ('FSP')
-
     file_list  = sys.argv[2].split(';')
     if len(file_list) >= 2:
         yml_file   = file_list[0]
@@ -2075,8 +2086,6 @@ def main():
         # Override macro definition again for Pickle file
         if argc >= 5:
             gen_cfg_data.parse_macros (sys.argv[4:])
-        if 'FSP' in gen_cfg_data._macro_dict:
-            gen_cfg_data.set_mode ('FSP')
     else:
         gen_cfg_data.load_yaml (yml_file)
         if command == 'GENPKL':
@@ -2121,6 +2130,8 @@ def main():
 
     if dlt_file:
         gen_cfg_data.override_default_value(dlt_file)
+
+    gen_cfg_data.detect_fsp ()
 
     if   command == "GENBIN":
         if len(file_list) == 3:

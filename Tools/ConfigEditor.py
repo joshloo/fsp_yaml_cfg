@@ -625,7 +625,6 @@ class application(tkinter.Frame):
 
     def load_config_data(self, file_name):
         gen_cfg_data = CGenCfgData()
-        gen_cfg_data.set_mode(self.mode)
         if file_name.endswith('.pkl'):
             with open(file_name, "rb") as pkl_file:
                 gen_cfg_data.__dict__ = marshal.load(pkl_file)
@@ -635,6 +634,7 @@ class application(tkinter.Frame):
                 raise Exception(gen_cfg_data.get_last_error())
         else:
             raise Exception('Unsupported file "%s" !' % file_name)
+        gen_cfg_data.detect_fsp()
         return gen_cfg_data
 
     def about(self):
