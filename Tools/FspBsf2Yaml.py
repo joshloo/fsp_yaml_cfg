@@ -275,7 +275,8 @@ class CFspDsc2Yaml ():
         """
         Process a line in DSC config section.
         """
-        cfgs = []
+        cfgs         = []
+        struct_end   = False
         config_dict  = dict()
         init_dict    = dict()
         include     = ['']
@@ -309,7 +310,13 @@ class CFspDsc2Yaml ():
                     cfgs.insert (-1, config_dict)
                 else:
                     self.process_config (config_dict)
-                    cfgs.append (config_dict)
+                    if  struct_end:
+                        struct_end = False
+                        cfgs.insert (-1, config_dict)
+                    else:
+                        cfgs.append (config_dict)
+                        if  config_dict['cname'][0] == '>':
+                            struct_end = True
 
                 config_dict = dict(init_dict)
         return cfgs
@@ -334,6 +341,36 @@ class CFspDsc2Yaml ():
         """
         Fix up some special config items for SBL.
         """
+
+        # Insert FSPT_UPD/FSPM_UPD/FSPS_UPD tag so as to create C strcture
+        idxs = []
+        for idx, cfg in enumerate(cfg_list):
+            if cfg['cname'].startswith('<FSP_UPD_HEADER'):
+                idxs.append(idx)
+
+        if len(idxs) != 3:
+            return
+
+        # Handle insert backwards so that the index does not change in the loop
+        fsp_comp = 'SMT'
+        idx_comp = 0
+        for idx in idxs[::-1]:
+            # Add current FSP?_UPD start tag
+            cfgfig_dict = {}
+            cfgfig_dict['cname'] = '<FSP%s_UPD' % fsp_comp[idx_comp]
+            cfg_list.insert(idx, cfgfig_dict)
+            if idx_comp < 2:
+                # Add previous FSP?_UPD end tag
+                cfgfig_dict = {}
+                cfgfig_dict['cname'] = '>FSP%s_UPD' % fsp_comp[idx_comp + 1]
+                cfg_list.insert(idx, cfgfig_dict)
+            idx_comp += 1
+
+        # Add final FSPS_UPD end tag
+        cfgfig_dict = {}
+        cfgfig_dict['cname'] = '>FSP%s_UPD' % fsp_comp[0]
+        cfg_list.append(cfgfig_dict)
+
         return
 
     def get_section_range (self, section_name):

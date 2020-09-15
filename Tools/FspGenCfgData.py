@@ -464,8 +464,8 @@ class CFspBsf2Dsc:
                 dsc_lines.append('  # !BSF FIND:{%s}' % option['find'])
                 dsc_lines.append('')
 
-            #if option['instance'] > 0:
-            #    name = name + '_%s' % option['instance']
+            if option['instance'] > 0:
+                name = name + '_%s' % option['instance']
 
             if option['embed']:
                 dsc_lines.append('  # !HDR EMBED:{%s}' % option['embed'])
@@ -866,7 +866,7 @@ EndList
                 if IsDefSect or IsPcdSect or IsUpdSect or IsTmpSect:
                     Match = False if DscLine[0] != '!' else True
                     if Match:
-                        Match = re.match("^!(else|endif|ifdef|ifndef|if|elseif|include)\s*(.+)?$", DscLine)
+                        Match = re.match("^!(else|endif|ifdef|ifndef|if|elseif|include)\s*(.+)?$", DscLine.split("#")[0])
                     Keyword   = Match.group(1) if Match else ''
                     Remaining = Match.group(2) if Match else ''
                     Remaining = '' if Remaining is None else Remaining.strip()
@@ -932,6 +932,7 @@ EndList
                                     raise Exception ("ERROR: Unrecoginized directive for line '%s'" % DscLine)
 
             if not Handle:
+                SkipLines += 1
                 continue
 
             if IsDefSect:

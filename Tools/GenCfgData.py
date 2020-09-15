@@ -1830,7 +1830,10 @@ class CGenCfgData:
                     field  = CGenCfgData.format_struct_field_name (field, struct_dict[field][1])
 
                 if append:
-                    line = self.create_field (None, field, 0, 0, struct, '', '', '')
+                    offset = t_item['$STRUCT']['offset'] // 8
+                    if off_base == -1:
+                        off_base = offset
+                    line = self.create_field (None, field, 0, offset - off_base, struct, '', '', '')
                     lines.append ('  %s' % line)
                     last = struct
                 continue
