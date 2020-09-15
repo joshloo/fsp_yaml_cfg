@@ -32,7 +32,7 @@ class CFspDsc2Yaml ():
 
     def __init__ (self):
         self._Hdr_key_list  = ['EMBED', 'STRUCT']
-        self._Bsf_key_list  = ['NAME','HELP','TYPE','PAGE', 'PAGES', 'OPTION','CONDITION','ORDER', 'MARKER', 'SUBT', 'FIELD']
+        self._Bsf_key_list  = ['NAME','HELP','TYPE','PAGE', 'PAGES', 'OPTION','CONDITION','ORDER', 'MARKER', 'SUBT', 'FIELD', 'FIND']
         self.gen_cfg_data = None
         self.cfg_reg_exp  = re.compile("^([_a-zA-Z0-9$\(\)]+)\s*\|\s*(0x[0-9A-F]+|\*)\s*\|\s*(\d+|0x[0-9a-fA-F]+)\s*\|\s*(.+)")
         self.bsf_reg_exp  = re.compile("(%s):{(.+?)}(?:$|\s+)" % '|'.join(self._Bsf_key_list))
@@ -175,11 +175,14 @@ class CFspDsc2Yaml ():
                     config_dict['length'] = parts[1]
                     config_dict['cname']  = '@' + parts[0]
                     return True
-                elif key == 'pages' or key == 'page':
+                elif key in ['pages', 'page', 'find']:
                     init_dict = dict(config_dict)
                     config_dict.clear()
                     config_dict['cname'] = '$ACTION'
-                    config_dict['page'] = val
+                    if key == 'find':
+                        config_dict['find'] = val
+                    else:
+                        config_dict['page'] = val
                     return True
                 elif key == 'subt':
                     config_dict.clear()

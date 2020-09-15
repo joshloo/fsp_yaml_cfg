@@ -351,7 +351,8 @@ class application(tkinter.Frame):
         tkinter.Frame.__init__(self, master, borderwidth=2)
 
         self.menu_string = [
-            'Save Config Data to Binary', 'Load Config Data from Binary',
+            'Load Config Data from Binary',
+            'Save Config Data to Binary',
             'Load Config Changes from Delta File',
             'Save Config Changes to Delta File',
             'Save Full Config Data to Delta File'
@@ -419,19 +420,19 @@ class application(tkinter.Frame):
         file_menu.add_command(label="Open Config YAML file...",
                              command=self.load_from_yaml)
         file_menu.add_command(label=self.menu_string[0],
-                             command=self.save_to_bin,
+                             command=self.load_from_bin,
                              state='disabled')
         file_menu.add_command(label=self.menu_string[1],
-                             command=self.load_from_bin,
+                             command=self.save_to_bin,
                              state='disabled')
         file_menu.add_command(label=self.menu_string[2],
                              command=self.load_from_delta,
                              state='disabled')
         file_menu.add_command(label=self.menu_string[3],
-                             command=self.save_toDelta,
+                             command=self.save_to_delta,
                              state='disabled')
         file_menu.add_command(label=self.menu_string[4],
-                             command=self.save_full_toDelta,
+                             command=self.save_full_to_delta,
                              state='disabled')
         file_menu.add_command(label="About", command=self.about)
         menubar.add_cascade(label="File", menu=file_menu)
@@ -624,6 +625,7 @@ class application(tkinter.Frame):
 
     def load_config_data(self, file_name):
         gen_cfg_data = CGenCfgData()
+        gen_cfg_data.set_mode(self.mode)
         if file_name.endswith('.pkl'):
             with open(file_name, "rb") as pkl_file:
                 gen_cfg_data.__dict__ = marshal.load(pkl_file)
@@ -763,10 +765,10 @@ class application(tkinter.Frame):
         new_data = self.cfg_data_obj.generate_binary_array()
         self.cfg_data_obj.generate_delta_file_from_bin (path, self.org_cfg_data_bin, new_data, full)
 
-    def save_toDelta(self):
+    def save_to_delta(self):
         self.save_delta_file()
 
-    def save_full_toDelta(self):
+    def save_full_to_delta(self):
         self.save_delta_file(True)
 
     def save_to_bin(self):
@@ -775,8 +777,9 @@ class application(tkinter.Frame):
             return
 
         self.update_config_data_on_page()
+        bins = self.cfg_data_obj.save_current_to_bin()
+
         with open(path, 'wb') as fd:
-            bins = self.cfg_data_obj.generate_binary_array()
             fd.write(bins)
 
 

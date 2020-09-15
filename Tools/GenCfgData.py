@@ -568,18 +568,22 @@ class CGenCfgData:
     keyword_set    = set(['name', 'type', 'option', 'help', 'length', 'value', 'order', 'struct', 'condition'])
 
     def __init__(self):
+        self._mode       = ''
+        self._debug      = False
+        self._macro_dict = {}
         self.initialize ()
 
 
     def initialize (self):
-        self._cfg_tree  = {}
-        self._tmp_tree  = {}
-        self._cfg_list  = []
-        self._cfg_page  = {'root': {'title': '', 'child': []}}
-        self._cur_page  = ''
-        self._var_dict  = {}
-        self._def_dict  = {}
-        self._yaml_path = ''
+        self._old_bin    = None
+        self._cfg_tree   = {}
+        self._tmp_tree   = {}
+        self._cfg_list   = []
+        self._cfg_page   = {'root': {'title': '', 'child': []}}
+        self._cur_page   = ''
+        self._var_dict   = {}
+        self._def_dict   = {}
+        self._yaml_path  = ''
 
 
     @staticmethod
@@ -661,6 +665,15 @@ class CGenCfgData:
 
         return name
 
+
+    def get_mode (self):
+        return self._mode
+
+
+    def set_mode (self, mode):
+        self._mode = mode
+
+
     def get_last_error (self):
         return ''
 
@@ -704,6 +717,37 @@ class CGenCfgData:
             # replace known variable first
             expr = re.sub(r'\$\(([_a-zA-Z][\w\.]*)\)|\$([_a-zA-Z][\w\.]*)', _handler, expr)
         return expr_eval.eval(expr, self.get_variable)
+
+
+    def parse_macros (self, macro_def_str):
+        # ['-DABC=1', '-D', 'CFG_DEBUG=1', '-D', 'CFG_OUTDIR=Build']
+        self._macro_dict = {}
+        is_expression = False
+        for macro in macro_def_str:
+            if macro.startswith('-D'):
+                is_expression = True
+                if len(macro) > 2:
+                    macro = macro[2:]
+                else :
+                    continue
+            if is_expression:
+                is_expression = False
+                match = re.match("(\w+)=(.+)", macro)
+                if match:
+                    self._macro_dict[match.group(1)] = match.group(2)
+                else:
+                    match = re.match("(\w+)", macro)
+                    if match:
+                        self._macro_dict[match.group(1)] = ''
+        if len(self._macro_dict) == 0:
+            error = 1
+        else:
+            error = 0
+            if self._debug:
+                print ("INFO : Macro dictionary:")
+                for each in self._macro_dict:
+                    print ("       $(%s) = [ %s ]" % (each , self._macro_dict[each]))
+        return error
 
 
     def get_cfg_list (self, page_id = None):
@@ -1186,9 +1230,13 @@ class CGenCfgData:
         return length
 
 
-    def build_cfg_list (self, cfg_name ='', top = None, path = [], info = {'offset': 0}):
+    def build_cfg_list (self, cfg_name ='', top = None, path = None, info = None):
         if top is None:
-            top = self._cfg_tree
+            top  = self._cfg_tree
+        if path is None:
+            path = []
+        if info is None:
+            info = {'offset': 0}
 
         start = info['offset']
         is_leaf = True
@@ -1287,8 +1335,80 @@ class CGenCfgData:
         return result
 
 
+    def get_cfg_segment (self):
+        def _get_cfg_segment (name, cfgs, level):
+            if 'indx' not in cfgs:
+                if name.startswith('$ACTION_'):
+                    if 'find' in cfgs:
+                        find[0] = cfgs['find']
+            else:
+                if find[0]:
+                    act_cfg = self.get_item_by_index (cfgs['indx'])
+                    segments.append ([find[0], act_cfg['offset'] // 8, 0])
+                    find[0] = ''
+                return
+
+        find     = ['']
+        segments = []
+        self.traverse_cfg_tree (_get_cfg_segment, self._cfg_tree)
+        cfg_len = self._cfg_tree[CGenCfgData.STRUCT]['length'] // 8
+        if len(segments) == 0:
+            segments.append (['', 0, cfg_len])
+
+        if segments[0][1] != 0:
+            raise Exception ('"find" attribute should only appear at the beginning of a config segment !')
+        segments.append (['', cfg_len, 0])
+        cfg_segs = []
+        for idx, each in enumerate(segments[:-1]):
+            cfg_segs.append ((each[0], each[1], segments[idx+1][1] - each[1]))
+        return cfg_segs
+
+
+    def get_bin_segment (self, bin_data):
+        cfg_segs = self.get_cfg_segment ()
+        bin_segs = []
+        for seg in cfg_segs:
+            key = seg[0].encode()
+            if key == 0:
+                bin_segs.append ([seg[0], 0, len(bin_data)])
+                break
+            pos = bin_data.find(key)
+            if pos >= 0:
+                # ensure no other match for the key
+                if bin_data[pos + len(seg[0]):].find(key) >= 0:
+                    print ("Warning: Multiple matches for '%s' in binary, the 1st instance will be used !" % seg[0])
+                bin_segs.append ([seg[0], pos, seg[2]])
+            else:
+                raise Exception ("Could not find '%s' in binary !" % seg[0])
+        return bin_segs
+
+
+    def save_current_to_bin (self):
+        cfg_bins = self.generate_binary_array()
+        if self._old_bin is None:
+            return cfg_bins
+
+        bin_data = bytearray(self._old_bin)
+        bin_segs = self.get_bin_segment (self._old_bin)
+        cfg_off  = 0
+        for each in bin_segs:
+            length = each[2]
+            bin_data[each[1]:each[1] + length] = cfg_bins[cfg_off:cfg_off+length]
+            cfg_off += length
+        print ('Patched the loaded binary successfully !')
+
+        return bin_data
+
+
     def load_default_from_bin (self, bin_data):
-        self.set_field_value(self._cfg_tree, bin_data, True)
+        # get cfg bin length
+        self._old_bin = bin_data
+        bin_segs = self.get_bin_segment (bin_data)
+        cfg_bins = bytearray()
+        for each in bin_segs:
+            cfg_bins.extend (bin_data[each[1]:each[1] + each[2]])
+        self.set_field_value(self._cfg_tree, cfg_bins, True)
+        return cfg_bins
 
 
     def generate_binary_array (self, path = ''):
@@ -1300,6 +1420,7 @@ class CGenCfgData:
                 raise Exception("Invalid configuration path '%s' !" % path)
         return self.get_field_value(top)
 
+
     def generate_binary (self, bin_file_name, path = ''):
         bin_file = open(bin_file_name, "wb")
         bin_file.write (self.generate_binary_array (path))
@@ -1309,9 +1430,10 @@ class CGenCfgData:
     def write_delta_file (self, out_file, platform_id, out_lines):
         dlt_fd = open (out_file, "w")
         dlt_fd.write ("%s\n"   % get_copyright_header('dlt', True))
-        dlt_fd.write ('#\n')
-        dlt_fd.write ('# Delta configuration values for platform ID 0x%04X\n' % platform_id)
-        dlt_fd.write ('#\n\n')
+        if platform_id is not None:
+            dlt_fd.write ('#\n')
+            dlt_fd.write ('# Delta configuration values for platform ID 0x%04X\n' % platform_id)
+            dlt_fd.write ('#\n\n')
         for line in out_lines:
             dlt_fd.write ('%s\n' % line)
         dlt_fd.close()
@@ -1361,7 +1483,7 @@ class CGenCfgData:
 
 
     def generate_delta_file_from_bin (self, delta_file, old_data, new_data, full=False):
-        self.load_default_from_bin (new_data)
+        new_data = self.load_default_from_bin (new_data)
         lines = []
         tag_name = ''
         level = 0
@@ -1369,6 +1491,10 @@ class CGenCfgData:
         def_platform_id = 0
 
         for item in self._cfg_list:
+
+            if not full and  (item['type'] in ['Reserved']):
+                continue
+
             old_val = get_bits_from_bytes (old_data, item['offset'],  item['length'])
             new_val = get_bits_from_bytes (new_data, item['offset'],  item['length'])
 
@@ -1376,17 +1502,20 @@ class CGenCfgData:
             if 'PLATFORMID_CFG_DATA.PlatformId' == full_name:
                 def_platform_id = old_val
 
-            if new_val != old_val:
+            if new_val != old_val or full:
                 val_str = self.reformat_value_str (item['value'], item['length'])
                 text = '%-40s | %s' % (full_name, val_str)
                 lines.append(text)
 
-        if platform_id is None or def_platform_id == platform_id:
-            platform_id = def_platform_id
-            # print("WARNING: 'PlatformId' configuration is same as default %d!" % platform_id)
+        if self.get_mode() != 'FSP':
+            if platform_id is None or def_platform_id == platform_id:
+                platform_id = def_platform_id
+                print("WARNING: 'PlatformId' configuration is same as default %d!" % platform_id)
 
-        lines.insert(0, '%-40s | %s\n\n' %
+            lines.insert(0, '%-40s | %s\n\n' %
                      ('PLATFORMID_CFG_DATA.PlatformId', '0x%04X' % platform_id))
+        else:
+            platform_id = None
 
         self.write_delta_file (delta_file, platform_id, lines)
         return 0
@@ -1862,25 +1991,30 @@ def usage():
     print ('\n'.join([
           "GenCfgData Version 0.50",
           "Usage:",
-          "    GenCfgData  GENINC  BinFile              IncOutFile",
-          "    GenCfgData  GENPKL  YamlFile             PklOutFile",
-          "    GenCfgData  GENBIN  YamlFile[;DltFile]   BinOutFile",
-          "    GenCfgData  GENDLT  YamlFile[;BinFile]   DltOutFile",
-          "    GenCfgData  GENYML  YamlFile             YamlOutFile",
-          "    GenCfgData  GENHDR  YamlFile             HdrOutFile"
+          "    GenCfgData  GENINC  BinFile              IncOutFile  [-D Macros]",
+          "    GenCfgData  GENPKL  YamlFile             PklOutFile  [-D Macros]",
+          "    GenCfgData  GENBIN  YamlFile[;DltFile]   BinOutFile  [-D Macros]",
+          "    GenCfgData  GENDLT  YamlFile[;BinFile]   DltOutFile  [-D Macros]",
+          "    GenCfgData  GENYML  YamlFile             YamlOutFile [-D Macros]",
+          "    GenCfgData  GENHDR  YamlFile             HdrOutFil   [-D Macros]e"
           ]))
 
 
 def main():
     # Parse the options and args
     argc = len(sys.argv)
-    if argc < 4 or argc > 5:
+    if argc < 4:
         usage()
         return 1
 
     gen_cfg_data = CGenCfgData()
     command   = sys.argv[1].upper()
     out_file  = sys.argv[3]
+    if argc >= 5 and gen_cfg_data.parse_macros (sys.argv[4:]) != 0:
+        raise Exception ("ERROR: Macro parsing failed !")
+
+    if 'FSP' in gen_cfg_data._macro_dict:
+        gen_cfg_data.set_mode ('FSP')
 
     file_list  = sys.argv[2].split(';')
     if len(file_list) >= 2:
@@ -1934,6 +2068,12 @@ def main():
         with open(yml_file, "rb") as pkl_file:
             gen_cfg_data.__dict__ = marshal.load(pkl_file)
         gen_cfg_data.prepare_marshal (False)
+
+        # Override macro definition again for Pickle file
+        if argc >= 5:
+            gen_cfg_data.parse_macros (sys.argv[4:])
+        if 'FSP' in gen_cfg_data._macro_dict:
+            gen_cfg_data.set_mode ('FSP')
     else:
         gen_cfg_data.load_yaml (yml_file)
         if command == 'GENPKL':
@@ -1994,7 +2134,8 @@ def main():
         gen_cfg_data.generate_binary(out_file, yml_scope)
 
     elif command == "GENDLT":
-        gen_cfg_data.generate_delta_file (out_file, cfg_bin_file, cfg_bin_file2)
+        full = True if 'FULL' in gen_cfg_data._macro_dict else False
+        gen_cfg_data.generate_delta_file (out_file, cfg_bin_file, cfg_bin_file2, full)
 
     elif command == "GENHDR":
         out_files = out_file.split(';')
