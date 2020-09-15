@@ -409,7 +409,6 @@ class CFG_YAML():
     def parse (self, parent_name = '', curr = None, level = 0):
         child = None
         last_indent = None
-        temp_chk = {}
 
         while True:
             line = self.get_line ()
@@ -504,13 +503,9 @@ class CFG_YAML():
                     # special virtual nodes, rename to ensure unique key
                     key = '$ACTION_%04X' % self.index
                     self.index += 1
+
                 if key in curr:
-                    if key not in temp_chk:
-                        # check for duplicated keys at same level
-                        temp_chk[key] = 1
-                    else:
-                        #raise Exception ("Duplicated item '%s:%s' found !" % (parent_name, key))
-                        pass
+                    raise Exception ("Duplicated item '%s:%s' found !" % (parent_name, key))
 
                 curr[key] = child
                 if self.var_dict is None and key == CFG_YAML.VARIABLE:
@@ -1383,6 +1378,15 @@ class CGenCfgData:
         return bin_segs
 
 
+    def extract_cfg_from_bin (self, bin_data):
+        # get cfg bin length
+        cfg_bins = bytearray()
+        bin_segs = self.get_bin_segment (bin_data)
+        for each in bin_segs:
+            cfg_bins.extend (bin_data[each[1]:each[1] + each[2]])
+        return cfg_bins
+
+
     def save_current_to_bin (self):
         cfg_bins = self.generate_binary_array()
         if self._old_bin is None:
@@ -1401,12 +1405,8 @@ class CGenCfgData:
 
 
     def load_default_from_bin (self, bin_data):
-        # get cfg bin length
         self._old_bin = bin_data
-        bin_segs = self.get_bin_segment (bin_data)
-        cfg_bins = bytearray()
-        for each in bin_segs:
-            cfg_bins.extend (bin_data[each[1]:each[1] + each[2]])
+        cfg_bins = self.extract_cfg_from_bin (bin_data)
         self.set_field_value(self._cfg_tree, cfg_bins, True)
         return cfg_bins
 
@@ -1523,7 +1523,7 @@ class CGenCfgData:
 
     def generate_delta_file(self, delta_file, bin_file, bin_file2, full=False):
         fd = open (bin_file, 'rb')
-        new_data = bytearray(fd.read())
+        new_data = self.extract_cfg_from_bin (bytearray(fd.read()))
         fd.close()
 
         if bin_file2 == '':
@@ -1531,7 +1531,7 @@ class CGenCfgData:
         else:
             old_data = new_data
             fd = open (bin_file2, 'rb')
-            new_data = bytearray(fd.read())
+            new_data = self.extract_cfg_from_bin (bytearray(fd.read()))
             fd.close()
 
         return self.generate_delta_file_from_bin (delta_file, old_data, new_data, full)
@@ -1557,7 +1557,7 @@ class CGenCfgData:
     def write_cfg_header_file (self, hdr_file_name, tag_mode, tag_dict, struct_list):
         lines = []
         lines.append ('\n')
-        is_fsp   = True if (tag_mode & 0x80) else False
+        is_fsp   = True if self.get_mode() == 'FSP' else False
         if is_fsp:
             lines.append ('#include <FspUpd.h>\n')
 

@@ -464,8 +464,8 @@ class CFspBsf2Dsc:
                 dsc_lines.append('  # !BSF FIND:{%s}' % option['find'])
                 dsc_lines.append('')
 
-            if option['instance'] > 0:
-                name = name + '_%s' % option['instance']
+            #if option['instance'] > 0:
+            #    name = name + '_%s' % option['instance']
 
             if option['embed']:
                 dsc_lines.append('  # !HDR EMBED:{%s}' % option['embed'])
