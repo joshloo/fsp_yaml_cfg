@@ -4,7 +4,6 @@ set WORK_DIR=%~dp0..
 set FSP_DIR=%WORK_DIR%\IntelFsp
 set OUT_DIR=%WORK_DIR%\Output
 set BSF2YAML=%WORK_DIR%\Tools\FspDscBsf2Yaml.py
-set SOC_NAME=%WORK_DIR%\Tools\ExtractName.py
 set GEN_CFG=%WORK_DIR%\Tools\GenCfgData.py
 
 set FSP_NAME=Apl

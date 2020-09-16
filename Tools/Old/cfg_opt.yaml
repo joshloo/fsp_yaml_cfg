@@ -1,0 +1,968 @@
+  - $ACTION      :
+      page         : PLT::"Platform", MEM::"Memory Settings", SIL::"Silicon Settings", GEN::"General Settings", GIO::"GPIO Settings", OS::"OS Boot Options", SEC::"Security Settings"
+  - Signature    :
+      length       : 0x04
+      value        : 'CFGD'
+  - HeaderLength :
+      length       : 0x01
+      value        : 0x10
+  - Reserved     :
+      length       : 0x03
+      value        : 0,0,0
+  - UsedLength   :
+      length       : 0x04
+      value        : _LENGTH_
+  - TotalLength  :
+      length       : 0x04
+      value        : 0x2000
+  - PLATFORMID_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ PLATFORMID_CFG_DATA, 0x0F0, 0, 0 ] }
+    - PlatformId   :
+        name         : Platform ID
+        type         : Combo
+        option       : >
+                       0:Board  0,  1:Board  1,  2:Board  2,  3:Board  3,  4:Board  4,  5:Board  5,  6:Board  6,  7:Board  7,
+                       8:Board  8,  9:Board  9, 10:Board 10, 11:Board 11, 12:Board 12, 13:Board 13, 14:Board 14, 15:Board 15,
+                       16:Board 16, 17:Board 17, 18:Board 18, 19:Board 19, 20:Board 20, 21:Board 21, 22:Board 22, 23:Board 23,
+                       24:Board 24, 25:Board 25, 26:Board 26, 27:Board 27, 28:Board 28, 29:Board 29, 30:Board 30, 31:Board 31
+        help         : >
+                       Select platform ID
+        length       : 0x02
+        value        : 0x0000
+    - PseRsvd      :
+        length       : 0x02
+        value        : 0x0000
+  - PLAT_NAME_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ PLAT_NAME_CFG_DATA, 0x070, 0, 0 ] }
+    - PlatformName :
+        name         : Platform Name
+        type         : EditText
+        help         : >
+                       Specify the platform name, a maximum of 8 characters
+        length       : 0x8
+        value        : ' '
+  - GEN_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ GEN_CFG_DATA, 0x010, 0, 0 ] }
+    - DebugPrintLevel :
+        name         : Debug Print Level
+        type         : EditNum, HEX, (0x00000000,0xFFFFFFFF)
+        help         : >
+                       Specify debug print level
+        length       : 0x04
+        value        : 0x8000004F
+    - PayloadId    :
+        name         : Payload ID
+        type         : EditText
+        help         : >
+                       Specify payload ID string. Empty will boot default payload. Otherwise, boot specified payload ID in multi-payload binary.
+        length       : 0x04
+        value        : ''
+    - OsCrashMemorySize :
+        name         : OS Crash Memory Size
+        type         : Combo
+        option       :  0:0MB, 1:4MB, 2:8MB, 3:16MB, 4:32MB, 5:64MB
+        help         : >
+                       Specify reserved memory size for OS to save OS crash data. The reserved memory address should be same across reset.
+        length       : 0x01
+        value        : 0
+    - EnableCrashMode :
+        name         : Enable Crash Mode
+        option       : $EN_DIS
+        help         : >
+                       Enable/Disable Crash Mode. Boot into Crash OS only when crash mode is enabled.
+        length       : 0x01
+        value        : 0
+    - RpmbKeyProvisioning :
+        name         : RpmbKeyProvisioning
+        type         : Combo
+        option       : $EN_DIS
+        help         : >
+                       Enable or disable Rpmb Key Provisioning
+        length       : 0x01
+        value        : 0
+    - CurrentBoot  :
+        page         : OS
+        name         : Current Boot Option
+        option       :  16:AUTO, 0:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 10:10, 11:11, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15
+        help         : >
+                       Set the current boot option. It indicates the boot option index (0-15) to be tried first on the boot flow.
+                       AUTO allows platform to set current boot option using platform specific policy.
+        length       : 0x01
+        value        : 0
+  - GPIO_CFG_DATA :
+    - GPIO_CFG_HDR :
+      - CfgHeader    : !expand { CFGHDR_TMPL : [ GPIO_CFG_DATA, 0x400, 1, 0 ] }
+      - GpioHeaderSize :
+          length       : 0x01
+          value        : _LENGTH_GPIO_CFG_HDR_ - 8
+      - GpioBaseTableId :
+          length       : 0x01
+          value        : 0xFF
+      - GpioItemSize :
+          length       : 0x02
+          value        : 8
+      - GpioItemCount :
+          length       : 0x02
+          value        : (_LENGTH_GPIO_CFG_DATA_ - _LENGTH_GPIO_CFG_HDR_) / 8
+      - GpioItemIdBitOff :
+          length       : 0x01
+          value        : 48
+      - GpioItemIdBitLen :
+          length       : 0x01
+          value        : 13
+      - GpioItemValidBitOff :
+          length       : 0x01
+          value        : 63
+      - GpioItemUnused :
+          length       : 0x01
+          value        : 0
+      - GpioBaseTableBitMask :
+          length       : 34
+          value        : 0
+      - GpioTableData :
+          length       : 0
+          value        : 0
+    - GPIO_GPP_A00 : !expand { GPIO_TMPL : [ GPP_A00,  0x03502381,  0x80002001,  RCIN#                                             ,  PCH_H = N/A   PCH_LP = TIME_SYNC1                 ,  PCH_H = ESPI_ALERT1#   PCH_LP = N/A               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A01 : !expand { GPIO_TMPL : [ GPP_A01,  0x03502387,  0x80012019,  LAD0                                              ,  PCH_H = N/A   PCH_LP = ESPI_IO0                   ,  PCH_H = ESPI_IO0   PCH_LP = N/A                   ,  PCH_H = N/A ] }
+    - GPIO_GPP_A02 : !expand { GPIO_TMPL : [ GPP_A02,  0x03502387,  0x80022019,  LAD1                                              ,  PCH_H = N/A   PCH_LP = ESPI_IO1                   ,  PCH_H = ESPI_IO1   PCH_LP = N/A                   ,  PCH_H = N/A ] }
+    - GPIO_GPP_A03 : !expand { GPIO_TMPL : [ GPP_A03,  0x03502387,  0x80032019,  LAD2                                              ,  PCH_H = N/A   PCH_LP = ESPI_IO2                   ,  PCH_H = ESPI_IO2   PCH_LP = N/A                   ,  PCH_H = N/A ] }
+    - GPIO_GPP_A04 : !expand { GPIO_TMPL : [ GPP_A04,  0x03502387,  0x80042019,  LAD3                                              ,  PCH_H = N/A   PCH_LP = ESPI_IO3                   ,  PCH_H = ESPI_IO3   PCH_LP = N/A                   ,  PCH_H = N/A ] }
+    - GPIO_GPP_A05 : !expand { GPIO_TMPL : [ GPP_A05,  0x03502387,  0x80052019,  LFRAME#                                           ,  PCH_H = N/A   PCH_LP = ESPI_CS#                   ,  PCH_H = ESPI_CS0#   PCH_LP = N/A                  ,  PCH_H = N/A ] }
+    - GPIO_GPP_A06 : !expand { GPIO_TMPL : [ GPP_A06,  0x03502381,  0x80062001,  SERIRQ                                            ,  N/A                                               ,  PCH_H = ESPI_CS1#   PCH_LP = N/A                  ,  PCH_H = N/A ] }
+    - GPIO_GPP_A07 : !expand { GPIO_TMPL : [ GPP_A07,  0x03502381,  0x80072001,  PIRQA#                                            ,  PCH_H = N/A   PCH_LP = GSPI0_CS1#                 ,  PCH_H = ESPI_ALERT0#   PCH_LP = N/A               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A08 : !expand { GPIO_TMPL : [ GPP_A08,  0x03502381,  0x80082001,  CLKRUN#                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A09 : !expand { GPIO_TMPL : [ GPP_A09,  0x03502387,  0x80092009,  CLKOUT_LPC0                                       ,  PCH_H = N/A   PCH_LP = ESPI_CLK                   ,  PCH_H = ESPI_CLK   PCH_LP = N/A                   ,  PCH_H = N/A ] }
+    - GPIO_GPP_A10 : !expand { GPIO_TMPL : [ GPP_A10,  0x03502381,  0x800A2001,  CLKOUT_LPC1                                       ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A11 : !expand { GPIO_TMPL : [ GPP_A11,  0x03502381,  0x800B2001,  PME#                                              ,  PCH_H = SD_VDD2_PWR_EN#   PCH_LP = GSPI1_CS1#     ,  PCH_H = N/A   PCH_LP = SD_VDD2_PWR_EN#            ,  PCH_H = N/A ] }
+    - GPIO_GPP_A12 : !expand { GPIO_TMPL : [ GPP_A12,  0x03502381,  0x800C2001,  BM_BUSY#                                          ,  ISH_GP6                                           ,  SX_EX-                                            ,  PCH_H = N/A ] }
+    - GPIO_GPP_A13 : !expand { GPIO_TMPL : [ GPP_A13,  0x03502381,  0x800D2001,  PCH_H = SUSWARN#   PCH_LP = SUSWARN#/SUSPWRDNACK  ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A14 : !expand { GPIO_TMPL : [ GPP_A14,  0x03502387,  0x800E2001,  SUS_STAT#                                         ,  PCH_H = N/A   PCH_LP = ESPI_RESET#                ,  PCH_H = ESPI_RESET#   PCH_LP = N/A                ,  PCH_H = N/A ] }
+    - GPIO_GPP_A15 : !expand { GPIO_TMPL : [ GPP_A15,  0x03502381,  0x800F2001,  SUSACK#                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A16 : !expand { GPIO_TMPL : [ GPP_A16,  0x03502381,  0x80102001,  PCH_H = CLKOUT_48   PCH_LP = SD_1P8_SEL           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A17 : !expand { GPIO_TMPL : [ GPP_A17,  0x03502381,  0x80112001,  SD_VDD1_PWR_EN#                                   ,  ISH_GP7                                           ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A18 : !expand { GPIO_TMPL : [ GPP_A18,  0x03502381,  0x80122001,  ISH_GP0                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A19 : !expand { GPIO_TMPL : [ GPP_A19,  0x03502381,  0x80132001,  ISH_GP1                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A20 : !expand { GPIO_TMPL : [ GPP_A20,  0x03502381,  0x80142001,  ISH_GP2                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A21 : !expand { GPIO_TMPL : [ GPP_A21,  0x0500E2E1,  0x00150001,  ISH_GP3                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A22 : !expand { GPIO_TMPL : [ GPP_A22,  0x0500E2E1,  0x00160001,  ISH_GP4                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_A23 : !expand { GPIO_TMPL : [ GPP_A23,  0x051885E1,  0x00170001,  ISH_GP5                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B00 : !expand { GPIO_TMPL : [ GPP_B00,  0x03502381,  0x81002001,  PCH_H = GSPI0_CS1#   PCH_LP = Reserved            ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B01 : !expand { GPIO_TMPL : [ GPP_B01,  0x03502381,  0x81012001,  PCH_H = GSPI1_CS1#   PCH_LP = Reserved            ,  PCH_H = TIME_SYNC1   PCH_LP = N/A                 ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B02 : !expand { GPIO_TMPL : [ GPP_B02,  0x05188DE1,  0x01020001,  VRALERT#                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B03 : !expand { GPIO_TMPL : [ GPP_B03,  0x0300E2E1,  0x01031801,  CPU_GP2                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B04 : !expand { GPIO_TMPL : [ GPP_B04,  0x03502381,  0x81042001,  CPU_GP3                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B05 : !expand { GPIO_TMPL : [ GPP_B05,  0x03502381,  0x81052001,  SRCCLKREQ0#                                       ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B06 : !expand { GPIO_TMPL : [ GPP_B06,  0x03502383,  0x81062001,  SRCCLKREQ1#                                       ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B07 : !expand { GPIO_TMPL : [ GPP_B07,  0x03502383,  0x81072001,  SRCCLKREQ2#                                       ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B08 : !expand { GPIO_TMPL : [ GPP_B08,  0x050062E1,  0x01080001,  SRCCLKREQ3#                                       ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B09 : !expand { GPIO_TMPL : [ GPP_B09,  0x03502383,  0x81092001,  SRCCLKREQ4#                                       ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B10 : !expand { GPIO_TMPL : [ GPP_B10,  0x03502381,  0x810A2001,  SRCCLKREQ5#                                       ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B11 : !expand { GPIO_TMPL : [ GPP_B11,  0x03502381,  0x810B2001,  PCH_H = I2S_MCLK   PCH_LP = EXT_PWR_GATE#         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B12 : !expand { GPIO_TMPL : [ GPP_B12,  0x03502383,  0x810C2001,  SLP_S0#                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B13 : !expand { GPIO_TMPL : [ GPP_B13,  0x03502383,  0x810D2001,  PLTRST#                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B14 : !expand { GPIO_TMPL : [ GPP_B14,  0x03502281,  0x810E2001,  SPKR                                              ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B15 : !expand { GPIO_TMPL : [ GPP_B15,  0x03502381,  0x810F2001,  GSPI0_CS0#                                        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B16 : !expand { GPIO_TMPL : [ GPP_B16,  0x03502381,  0x81102001,  GSPI0_CLK                                         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B17 : !expand { GPIO_TMPL : [ GPP_B17,  0x03502381,  0x81112001,  GSPI0_MISO                                        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B18 : !expand { GPIO_TMPL : [ GPP_B18,  0x03502281,  0x81122001,  GSPI0_MOSI                                        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B19 : !expand { GPIO_TMPL : [ GPP_B19,  0x03502381,  0x81132001,  GSPI1_CS0#                                        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B20 : !expand { GPIO_TMPL : [ GPP_B20,  0x03502381,  0x81142001,  GSPI1_CLK                                         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B21 : !expand { GPIO_TMPL : [ GPP_B21,  0x03502381,  0x81152001,  GSPI1_MISO                                        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B22 : !expand { GPIO_TMPL : [ GPP_B22,  0x03502281,  0x81162001,  GSPI1_MOSI                                        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_B23 : !expand { GPIO_TMPL : [ GPP_B23,  0x03502281,  0x81172001,  SML1ALERT#                                        ,  PCHHOT#                                           ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C00 : !expand { GPIO_TMPL : [ GPP_C00,  0x03502383,  0x82002001,  SMBCLK                                            ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C01 : !expand { GPIO_TMPL : [ GPP_C01,  0x03502383,  0x82012001,  SMBDATA                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C02 : !expand { GPIO_TMPL : [ GPP_C02,  0x050062E1,  0x02020001,  SMBALERT#                                         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C03 : !expand { GPIO_TMPL : [ GPP_C03,  0x03502383,  0x82032001,  SML0CLK                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C04 : !expand { GPIO_TMPL : [ GPP_C04,  0x03502383,  0x82042001,  SML0DATA                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C05 : !expand { GPIO_TMPL : [ GPP_C05,  0x03502281,  0x82052001,  SML0ALERT#                                        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C06 : !expand { GPIO_TMPL : [ GPP_C06,  0x03502381,  0x82062001,  SML1CLK                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C07 : !expand { GPIO_TMPL : [ GPP_C07,  0x03502381,  0x82072001,  SML1DATA                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C08 : !expand { GPIO_TMPL : [ GPP_C08,  0x03502381,  0x82082001,  PCH_H = UART0A_RXD   PCH_LP = UART0_RXD           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C09 : !expand { GPIO_TMPL : [ GPP_C09,  0x03502381,  0x82092001,  PCH_H = UART0A_TXD   PCH_LP = UART0_TXD           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C10 : !expand { GPIO_TMPL : [ GPP_C10,  0x03502381,  0x820A2001,  PCH_H = UART0A_RTS#   PCH_LP = UART0_RTS#         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C11 : !expand { GPIO_TMPL : [ GPP_C11,  0x03502381,  0x820B2001,  PCH_H = UART0A_CTS#   PCH_LP = UART0_CTS#         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C12 : !expand { GPIO_TMPL : [ GPP_C12,  0x03502381,  0x820C2001,  UART1_RXD                                         ,  ISH_UART1_RXD                                     ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C13 : !expand { GPIO_TMPL : [ GPP_C13,  0x03502381,  0x820D2001,  UART1_TXD                                         ,  ISH_UART1_TXD                                     ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C14 : !expand { GPIO_TMPL : [ GPP_C14,  0x03502381,  0x820E2001,  UART1_RTS#                                        ,  ISH_UART1_RTS#                                    ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C15 : !expand { GPIO_TMPL : [ GPP_C15,  0x03502381,  0x820F2001,  UART1_CTS#                                        ,  ISH_UART1_CTS#                                    ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C16 : !expand { GPIO_TMPL : [ GPP_C16,  0x03502383,  0x82102001,  I2C0_SDA                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C17 : !expand { GPIO_TMPL : [ GPP_C17,  0x03502383,  0x82112001,  I2C0_SCL                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C18 : !expand { GPIO_TMPL : [ GPP_C18,  0x03502383,  0x82122001,  I2C1_SDA                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C19 : !expand { GPIO_TMPL : [ GPP_C19,  0x03502383,  0x82132001,  I2C1_SCL                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C20 : !expand { GPIO_TMPL : [ GPP_C20,  0x03502381,  0x82142001,  UART2_RXD                                         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C21 : !expand { GPIO_TMPL : [ GPP_C21,  0x03502381,  0x82152001,  UART2_TXD                                         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C22 : !expand { GPIO_TMPL : [ GPP_C22,  0x03502381,  0x82162001,  UART2_RTS#                                        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_C23 : !expand { GPIO_TMPL : [ GPP_C23,  0x03502381,  0x82172001,  UART2_CTS#                                        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D00 : !expand { GPIO_TMPL : [ GPP_D00,  0x03502381,  0x83002001,  SPI1_CS#                                          ,  PCH_H = N/A   PCH_LP = BK0                        ,  SBK0                                              ,  PCH_H = BK0 ] }
+    - GPIO_GPP_D01 : !expand { GPIO_TMPL : [ GPP_D01,  0x03502381,  0x83012001,  SPI1_CLK                                          ,  PCH_H = N/A   PCH_LP = BK1                        ,  SBK1                                              ,  PCH_H = BK1 ] }
+    - GPIO_GPP_D02 : !expand { GPIO_TMPL : [ GPP_D02,  0x03502381,  0x83022001,  SPI1_MISO                                         ,  PCH_H = N/A   PCH_LP = BK2                        ,  SBK2                                              ,  PCH_H = BK2 ] }
+    - GPIO_GPP_D03 : !expand { GPIO_TMPL : [ GPP_D03,  0x03502381,  0x83032001,  SPI1_MOSI                                         ,  PCH_H = N/A   PCH_LP = BK3                        ,  SBK3                                              ,  PCH_H = BK3 ] }
+    - GPIO_GPP_D04 : !expand { GPIO_TMPL : [ GPP_D04,  0x03502381,  0x83042001,  PCH_H = ISH_I2C2_SDA   PCH_LP = IMGCLKOUT0        ,  PCH_H = I2C3_SDA   PCH_LP = BK4                   ,  SBK4                                              ,  PCH_H = BK4 ] }
+    - GPIO_GPP_D05 : !expand { GPIO_TMPL : [ GPP_D05,  0x03502387,  0x83052001,  PCH_H = I2S2_SFRM   PCH_LP = ISH_I2C0_SDA         ,  N/A                                               ,  PCH_H = CNV_RF_RESET#   PCH_LP = N/A              ,  PCH_H = N/A ] }
+    - GPIO_GPP_D06 : !expand { GPIO_TMPL : [ GPP_D06,  0x03502387,  0x83062001,  PCH_H = I2S2_TXD   PCH_LP = ISH_I2C0_SCL          ,  N/A                                               ,  PCH_H = MODEM_CLKREQ   PCH_LP = N/A               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D07 : !expand { GPIO_TMPL : [ GPP_D07,  0x03502381,  0x83072001,  PCH_H = I2S2_RXD   PCH_LP = ISH_I2C1_SDA          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D08 : !expand { GPIO_TMPL : [ GPP_D08,  0x03502381,  0x83082001,  PCH_H = I2S2_SCLK   PCH_LP = ISH_I2C1_SCL         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D09 : !expand { GPIO_TMPL : [ GPP_D09,  0x03502381,  0x83092001,  ISH_SPI_CS#                                       ,  N/A                                               ,  GSPI2_CS0#                                        ,  PCH_H = N/A ] }
+    - GPIO_GPP_D10 : !expand { GPIO_TMPL : [ GPP_D10,  0x03502381,  0x830A2001,  ISH_SPI_CLK                                       ,  N/A                                               ,  GSPI2_CLK                                         ,  PCH_H = N/A ] }
+    - GPIO_GPP_D11 : !expand { GPIO_TMPL : [ GPP_D11,  0x03502385,  0x830B2001,  ISH_SPI_MISO                                      ,  PCH_H = GP_BSSB_CLK   PCH_LP = N/A                ,  GSPI2_MISO                                        ,  PCH_H = N/A ] }
+    - GPIO_GPP_D12 : !expand { GPIO_TMPL : [ GPP_D12,  0x03502385,  0x830C2001,  ISH_SPI_MOSI                                      ,  PCH_H = GP_BSSB_DI   PCH_LP = N/A                 ,  GSPI2_MOSI                                        ,  PCH_H = N/A ] }
+    - GPIO_GPP_D13 : !expand { GPIO_TMPL : [ GPP_D13,  0x03502381,  0x830D2001,  ISH_UART0_RXD                                     ,  PCH_H = N/A   PCH_LP = SML0BDATA                  ,  PCH_H = I2C2_SDA   PCH_LP = I2C4B_SDA             ,  PCH_H = N/A ] }
+    - GPIO_GPP_D14 : !expand { GPIO_TMPL : [ GPP_D14,  0x03502381,  0x830E2001,  ISH_UART0_TXD                                     ,  PCH_H = N/A   PCH_LP = SML0BCLK                   ,  PCH_H = I2C2_SCL   PCH_LP = I2C4B_SCL             ,  PCH_H = N/A ] }
+    - GPIO_GPP_D15 : !expand { GPIO_TMPL : [ GPP_D15,  0x03502381,  0x830F2001,  ISH_UART0_RTS#                                    ,  GSPI2_CS1#                                        ,  N/A                                               ,  PCH_H = CNV_WFEN ] }
+    - GPIO_GPP_D16 : !expand { GPIO_TMPL : [ GPP_D16,  0x03502381,  0x83102001,  ISH_UART0_CTS#                                    ,  PCH_H = N/A   PCH_LP = SML0BALERT#                ,  N/A                                               ,  PCH_H = CNV_WCEN ] }
+    - GPIO_GPP_D17 : !expand { GPIO_TMPL : [ GPP_D17,  0x03502383,  0x83112001,  DMIC_CLK1                                         ,  SNDW3_CLK                                         ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D18 : !expand { GPIO_TMPL : [ GPP_D18,  0x03502383,  0x83122001,  DMIC_DATA1                                        ,  SNDW3_DATA                                        ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D19 : !expand { GPIO_TMPL : [ GPP_D19,  0x03502383,  0x83132001,  DMIC_CLK0                                         ,  SNDW4_CLK                                         ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D20 : !expand { GPIO_TMPL : [ GPP_D20,  0x03502383,  0x83142001,  DMIC_DATA0                                        ,  SNDW4_DATA                                        ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D21 : !expand { GPIO_TMPL : [ GPP_D21,  0x03502381,  0x83152001,  SPI1_IO2                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D22 : !expand { GPIO_TMPL : [ GPP_D22,  0x03502381,  0x83162001,  SPI1_IO3                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_D23 : !expand { GPIO_TMPL : [ GPP_D23,  0x03502381,  0x83172001,  PCH_H = ISH_I2C2_SCL   PCH_LP = I2S_MCLK          ,  PCH_H = I2C3_SCL   PCH_LP = N/A                   ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E00 : !expand { GPIO_TMPL : [ GPP_E00,  0x03502383,  0x84002001,  SATAXPCIE0                                        ,  SATAGP0                                           ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E01 : !expand { GPIO_TMPL : [ GPP_E01,  0x03502383,  0x84012001,  SATAXPCIE1                                        ,  SATAGP1                                           ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E02 : !expand { GPIO_TMPL : [ GPP_E02,  0x03502383,  0x84022001,  SATAXPCIE2                                        ,  SATAGP2                                           ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E03 : !expand { GPIO_TMPL : [ GPP_E03,  0x03502381,  0x84032001,  CPU_GP0                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E04 : !expand { GPIO_TMPL : [ GPP_E04,  0x03502381,  0x84042001,  SATA_DEVSLP0                                      ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E05 : !expand { GPIO_TMPL : [ GPP_E05,  0x03502381,  0x84052001,  SATA_DEVSLP1                                      ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E06 : !expand { GPIO_TMPL : [ GPP_E06,  0x03502381,  0x84062001,  SATA_DEVSLP2                                      ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E07 : !expand { GPIO_TMPL : [ GPP_E07,  0x03502381,  0x84072001,  CPU_GP1                                           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E08 : !expand { GPIO_TMPL : [ GPP_E08,  0x03502381,  0x84082001,  SATALED#                                          ,  PCH_H = N/A   PCH_LP = SPI1_CS1#                  ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E09 : !expand { GPIO_TMPL : [ GPP_E09,  0x03502383,  0x84092001,  USB2_OC0#                                         ,  PCH_H = N/A   PCH_LP = GP_BSSB_CLK                ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E10 : !expand { GPIO_TMPL : [ GPP_E10,  0x03502383,  0x840A2001,  USB2_OC1#                                         ,  PCH_H = N/A   PCH_LP = GP_BSSB_DI                 ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E11 : !expand { GPIO_TMPL : [ GPP_E11,  0x03502383,  0x840B2001,  USB2_OC2#                                         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E12 : !expand { GPIO_TMPL : [ GPP_E12,  0x03502383,  0x840C2001,  USB2_OC3#                                         ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_E13 : !expand { GPIO_TMPL : [ GPP_E13,  0x00000000,  0x840D0000,  PCH_LP = DDPB_HPD0                                ,  PCH_LP = DISP_MISC0                               ,  PCH_LP = N/A                                      ,  N/A ] }
+    - GPIO_GPP_E14 : !expand { GPIO_TMPL : [ GPP_E14,  0x00000000,  0x840E0000,  PCH_LP = DDPC_HPD1                                ,  PCH_LP = DISP_MISC1                               ,  PCH_LP = N/A                                      ,  N/A ] }
+    - GPIO_GPP_E15 : !expand { GPIO_TMPL : [ GPP_E15,  0x00000000,  0x840F0000,  PCH_LP = DDPD_HPD2                                ,  PCH_LP = DISP_MISC2                               ,  PCH_LP = N/A                                      ,  N/A ] }
+    - GPIO_GPP_E16 : !expand { GPIO_TMPL : [ GPP_E16,  0x00000000,  0x84100000,  PCH_LP = N/A                                      ,  PCH_LP = DISP_MISC3                               ,  PCH_LP = N/A                                      ,  N/A ] }
+    - GPIO_GPP_E17 : !expand { GPIO_TMPL : [ GPP_E17,  0x00000000,  0x84110000,  PCH_LP = EDP_HPD                                  ,  PCH_LP = DISP_MISC4                               ,  PCH_LP = N/A                                      ,  N/A ] }
+    - GPIO_GPP_E18 : !expand { GPIO_TMPL : [ GPP_E18,  0x00000000,  0x84120000,  PCH_LP = DPPB_CTRLCLK                             ,  PCH_LP = N/A                                      ,  PCH_LP = CNV_BT_HOST_WAKE#                        ,  N/A ] }
+    - GPIO_GPP_E19 : !expand { GPIO_TMPL : [ GPP_E19,  0x00000000,  0x84130000,  PCH_LP = DPPB_CTRLDATA                            ,  PCH_LP = N/A                                      ,  PCH_LP = CNV_BT_IF_SELECT                         ,  N/A ] }
+    - GPIO_GPP_E20 : !expand { GPIO_TMPL : [ GPP_E20,  0x00000000,  0x84140000,  PCH_LP = DPPC_CTRLCLK                             ,  PCH_LP = N/A                                      ,  PCH_LP = N/A                                      ,  N/A ] }
+    - GPIO_GPP_E21 : !expand { GPIO_TMPL : [ GPP_E21,  0x00000000,  0x84150000,  PCH_LP = DPPC_CTRLDATA                            ,  PCH_LP = N/A                                      ,  PCH_LP = N/A                                      ,  N/A ] }
+    - GPIO_GPP_E22 : !expand { GPIO_TMPL : [ GPP_E22,  0x00000000,  0x84160000,  PCH_LP = DPPD_CTRLCLK                             ,  PCH_LP = N/A                                      ,  PCH_LP = N/A                                      ,  N/A ] }
+    - GPIO_GPP_E23 : !expand { GPIO_TMPL : [ GPP_E23,  0x00000000,  0x84170000,  PCH_LP = DPPD_CTRLDATA                            ,  PCH_LP = N/A                                      ,  PCH_LP = N/A                                      ,  N/A ] }
+    - GPIO_GPP_F00 : !expand { GPIO_TMPL : [ GPP_F00,  0x03502383,  0x85002001,  PCH_H = SATAXPCIE3   PCH_LP = CNV_PA_BLANKING     ,  PCH_H = SATAGP3   PCH_LP = N/A                    ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F01 : !expand { GPIO_TMPL : [ GPP_F01,  0x03502383,  0x85012019,  PCH_H = SATAXPCIE4   PCH_LP = N/A                 ,  PCH_H = SATAGP4   PCH_LP = N/A                    ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F02 : !expand { GPIO_TMPL : [ GPP_F02,  0x050062E1,  0x05020001,  PCH_H = SATAXPCIE5   PCH_LP = N/A                 ,  PCH_H = SATAGP5   PCH_LP = N/A                    ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F03 : !expand { GPIO_TMPL : [ GPP_F03,  0x03502383,  0x85032001,  PCH_H = SATAXPCIE6   PCH_LP = N/A                 ,  PCH_H = SATAGP6   PCH_LP = N/A                    ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F04 : !expand { GPIO_TMPL : [ GPP_F04,  0x03502383,  0x85042001,  PCH_H = SATAXPCIE7   PCH_LP = CNV_BRI_DT          ,  PCH_H = SATAGP7   PCH_LP = UART0_RTS#             ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F05 : !expand { GPIO_TMPL : [ GPP_F05,  0x051885A1,  0x05050019,  PCH_H = SATA_DEVSLP3   PCH_LP = CNV_BRI_RSP       ,  PCH_H = N/A   PCH_LP = UART0_RXD                  ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F06 : !expand { GPIO_TMPL : [ GPP_F06,  0x03502381,  0x85062001,  PCH_H = SATA_DEVSLP4   PCH_LP = CNV_RGI_DT        ,  PCH_H = N/A   PCH_LP = UART0_TXD                  ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F07 : !expand { GPIO_TMPL : [ GPP_F07,  0x050062E1,  0x05070001,  PCH_H = SATA_DEVSLP5   PCH_LP = CNV_RGI_RSP       ,  PCH_H = N/A   PCH_LP = UART0_CTS#                 ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F08 : !expand { GPIO_TMPL : [ GPP_F08,  0x05506281,  0x85082001,  PCH_H = SATA_DEVSLP6   PCH_LP = CNV_MFUART2_RXD   ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F09 : !expand { GPIO_TMPL : [ GPP_F09,  0x05006DE1,  0x05090001,  PCH_H = SATA_DEVSLP7   PCH_LP = CNV_MFUART2_TXD   ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F10 : !expand { GPIO_TMPL : [ GPP_F10,  0x050005E1,  0x050A0001,  PCH_H = SATA_SCLOCK   PCH_LP = N/A                ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F11 : !expand { GPIO_TMPL : [ GPP_F11,  0x03502381,  0x850B2001,  PCH_H = SATA_SLOAD   PCH_LP = EMMC_CMD            ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F12 : !expand { GPIO_TMPL : [ GPP_F12,  0x050005E1,  0x050C0001,  PCH_H = SATA_S-   PCH_LP = EMMC_DATA0             ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F13 : !expand { GPIO_TMPL : [ GPP_F13,  0x03502381,  0x850D2001,  PCH_H = SATA_S-   PCH_LP = EMMC_DATA1             ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F14 : !expand { GPIO_TMPL : [ GPP_F14,  0x03502385,  0x850E2001,  PCH_H = N/A   PCH_LP = EMMC_DATA2                 ,  PCH_H = PS_ON#   PCH_LP = N/A                     ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F15 : !expand { GPIO_TMPL : [ GPP_F15,  0x03502383,  0x850F2001,  PCH_H = USB2_OC4#   PCH_LP = EMMC_DATA3           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F16 : !expand { GPIO_TMPL : [ GPP_F16,  0x03502383,  0x85102001,  PCH_H = USB2_OC5#   PCH_LP = EMMC_DATA4           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F17 : !expand { GPIO_TMPL : [ GPP_F17,  0x03502383,  0x85112001,  PCH_H = USB2_OC6#   PCH_LP = EMMC_DATA5           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F18 : !expand { GPIO_TMPL : [ GPP_F18,  0x050062E1,  0x05120001,  PCH_H = USB2_OC7#   PCH_LP = EMMC_DATA6           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F19 : !expand { GPIO_TMPL : [ GPP_F19,  0x03502383,  0x85132001,  PCH_H = eDP_VDDEN   PCH_LP = EMMC_DATA7           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F20 : !expand { GPIO_TMPL : [ GPP_F20,  0x03502383,  0x85142001,  PCH_H = eDP_BKLTEN   PCH_LP = EMMC_RCLK           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F21 : !expand { GPIO_TMPL : [ GPP_F21,  0x03502383,  0x85152001,  PCH_H = eDP_BKLTCTL   PCH_LP = EMMC_CLK           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F22 : !expand { GPIO_TMPL : [ GPP_F22,  0x05506283,  0x85162001,  PCH_H = DDPF_CTRLCLK   PCH_LP = EMMC_RESET#       ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_F23 : !expand { GPIO_TMPL : [ GPP_F23,  0x050062E1,  0x05170001,  PCH_H = DDPF_C-   PCH_LP = A4WP_PRESENT           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_G00 : !expand { GPIO_TMPL : [ GPP_G00,  0x03502381,  0x86002001,  SD_CMD                                            ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_G01 : !expand { GPIO_TMPL : [ GPP_G01,  0x03502381,  0x86012001,  SD_DATA0                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_G02 : !expand { GPIO_TMPL : [ GPP_G02,  0x03502381,  0x86022001,  SD_DATA1                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_G03 : !expand { GPIO_TMPL : [ GPP_G03,  0x03502381,  0x86032001,  SD_DATA2                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_G04 : !expand { GPIO_TMPL : [ GPP_G04,  0x03502381,  0x86042001,  SD_DATA3                                          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_G05 : !expand { GPIO_TMPL : [ GPP_G05,  0x03502381,  0x86052001,  PCH_H = SD_CD#   PCH_LP = SD3_CD#                 ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_G06 : !expand { GPIO_TMPL : [ GPP_G06,  0x03502381,  0x86062001,  PCH_H = SD_CLK   PCH_LP = SD3_CLK                 ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_G07 : !expand { GPIO_TMPL : [ GPP_G07,  0x03502381,  0x86072001,  PCH_H = SD_WP   PCH_LP = SD3_WP                   ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H00 : !expand { GPIO_TMPL : [ GPP_H00,  0x03502383,  0x87002001,  PCH_H = SRCCLKREQ6#   PCH_LP = I2S2_SCLK          ,  PCH_H = N/A   PCH_LP = CNV_BT_I2S_SCLK            ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H01 : !expand { GPIO_TMPL : [ GPP_H01,  0x03502383,  0x87012001,  PCH_H = SRCCLKREQ7#   PCH_LP = I2S2_SFRM          ,  PCH_H = N/A   PCH_LP = CNV_BT_I2S_BCLK            ,  PCH_H = N/A   PCH_LP = CNV_RF_RESET#              ,  PCH_H = N/A ] }
+    - GPIO_GPP_H02 : !expand { GPIO_TMPL : [ GPP_H02,  0x03502383,  0x87022001,  PCH_H = SRCCLKREQ8#   PCH_LP = I2S2_TXD           ,  PCH_H = N/A   PCH_LP = CNV_BT_I2S_SDI             ,  PCH_H = N/A   PCH_LP = MODEM_CLKREQ               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H03 : !expand { GPIO_TMPL : [ GPP_H03,  0x03502381,  0x87032001,  PCH_H = SRCCLKREQ9#   PCH_LP = I2S2_RXD           ,  PCH_H = N/A   PCH_LP = CNV_BT_I2S_SDO             ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H04 : !expand { GPIO_TMPL : [ GPP_H04,  0x03502383,  0x87042001,  PCH_H = SRCCLKREQ10#   PCH_LP = I2C2_SDA          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H05 : !expand { GPIO_TMPL : [ GPP_H05,  0x03502381,  0x87052001,  PCH_H = SRCCLKREQ11#   PCH_LP = I2C2_SCL          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H06 : !expand { GPIO_TMPL : [ GPP_H06,  0x050005E1,  0x07060001,  PCH_H = SRCCLKREQ12#   PCH_LP = I2C3_SDA          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H07 : !expand { GPIO_TMPL : [ GPP_H07,  0x050062E1,  0x07070001,  PCH_H = SRCCLKREQ13#   PCH_LP = I2C3_SCL          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H08 : !expand { GPIO_TMPL : [ GPP_H08,  0x03502381,  0x87082001,  PCH_H = SRCCLKREQ14#   PCH_LP = I2C4_SDA          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H09 : !expand { GPIO_TMPL : [ GPP_H09,  0x03502381,  0x87092001,  PCH_H = SRCCLKREQ15#   PCH_LP = I2C4_SCL          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H10 : !expand { GPIO_TMPL : [ GPP_H10,  0x0500E2E1,  0x070A0001,  PCH_H = SML2CLK   PCH_LP = I2C5_SDA               ,  PCH_H = N/A   PCH_LP = ISH_I2C2_SDA               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H11 : !expand { GPIO_TMPL : [ GPP_H11,  0x03502381,  0x870B2001,  PCH_H = SML2DATA   PCH_LP = I2C5_SCL              ,  PCH_H = N/A   PCH_LP = ISH_I2C2_SCL               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H12 : !expand { GPIO_TMPL : [ GPP_H12,  0x03502281,  0x870C2001,  PCH_H = SML2ALERT#   PCH_LP = M2_SKT2_CFG0        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H13 : !expand { GPIO_TMPL : [ GPP_H13,  0x03502381,  0x870D2001,  PCH_H = SML3CLK   PCH_LP = M2_SKT2_CFG1           ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H14 : !expand { GPIO_TMPL : [ GPP_H14,  0x03502381,  0x870E2001,  PCH_H = SML3DATA   PCH_LP = M2_SKT2_CFG2          ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H15 : !expand { GPIO_TMPL : [ GPP_H15,  0x03148DA1,  0x070F0601,  PCH_H = SML3ALERT#   PCH_LP = M2_SKT2_CFG3        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H16 : !expand { GPIO_TMPL : [ GPP_H16,  0x053485A1,  0x07100601,  PCH_H = SML4CLK   PCH_LP = N/A                    ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H17 : !expand { GPIO_TMPL : [ GPP_H17,  0x0500E2E1,  0x07110001,  PCH_H = SML4DATA   PCH_LP = N/A                   ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H18 : !expand { GPIO_TMPL : [ GPP_H18,  0x050005E1,  0x07120001,  PCH_H = SML4ALERT#   PCH_LP = CPU_C10_GATE#       ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H19 : !expand { GPIO_TMPL : [ GPP_H19,  0x03502381,  0x87132001,  PCH_H = ISH_I2C0_SDA   PCH_LP = TIME_SYNC0        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H20 : !expand { GPIO_TMPL : [ GPP_H20,  0x03502381,  0x87142001,  PCH_H = ISH_I2C0_SCL   PCH_LP = IMGCLKOUT1        ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H21 : !expand { GPIO_TMPL : [ GPP_H21,  0x03502381,  0x87152001,  PCH_H = ISH_I2C1_SDA   PCH_LP = N/A               ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H22 : !expand { GPIO_TMPL : [ GPP_H22,  0x03502381,  0x87162001,  PCH_H = ISH_I2C1_SCL   PCH_LP = N/A               ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_H23 : !expand { GPIO_TMPL : [ GPP_H23,  0x050022E1,  0x07170001,  PCH_H = TIME_SYNC0   PCH_LP = N/A                 ,  N/A                                               ,  N/A                                               ,  PCH_H = N/A ] }
+    - GPIO_GPP_I00 : !expand { GPIO_TMPL : [ GPP_I00,  0x03502383,  0x88002001,  PCH_H = DDPB_HPD0                                 ,  PCH_H = DISP_MISC0                                ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I01 : !expand { GPIO_TMPL : [ GPP_I01,  0x03502383,  0x88012001,  PCH_H = DDPC_HPD1                                 ,  PCH_H = DISP_MISC1                                ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I02 : !expand { GPIO_TMPL : [ GPP_I02,  0x03502383,  0x88022001,  PCH_H = DDPD_HPD2                                 ,  PCH_H = DISP_MISC2                                ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I03 : !expand { GPIO_TMPL : [ GPP_I03,  0x053285A1,  0x08030001,  PCH_H = DDPF_HPD3                                 ,  PCH_H = DISP_MISC3                                ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I04 : !expand { GPIO_TMPL : [ GPP_I04,  0x03502383,  0x88042001,  PCH_H = EDP_HPD                                   ,  PCH_H = DISP_MISC4                                ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I05 : !expand { GPIO_TMPL : [ GPP_I05,  0x050062E1,  0x08050001,  PCH_H = DDPB_CTRLCLK                              ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I06 : !expand { GPIO_TMPL : [ GPP_I06,  0x03502281,  0x88062001,  PCH_H = DDPB_CTRLDATA                             ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I07 : !expand { GPIO_TMPL : [ GPP_I07,  0x03502383,  0x88072001,  PCH_H = DDPC_CTRLCLK                              ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I08 : !expand { GPIO_TMPL : [ GPP_I08,  0x03502283,  0x88082001,  PCH_H = DDPC_CTRLDATA                             ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I09 : !expand { GPIO_TMPL : [ GPP_I09,  0x0300E2E1,  0x08091801,  PCH_H = DDPD_CTRLCLK                              ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I10 : !expand { GPIO_TMPL : [ GPP_I10,  0x05506283,  0x880A2001,  PCH_H = DDPD_CTRLDATA                             ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I11 : !expand { GPIO_TMPL : [ GPP_I11,  0x03502381,  0x880B2001,  PCH_H = M2_SKT2_CFG0                              ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I12 : !expand { GPIO_TMPL : [ GPP_I12,  0x05148DA1,  0x080C0601,  PCH_H = M2_SKT2_CFG1                              ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I13 : !expand { GPIO_TMPL : [ GPP_I13,  0x03502381,  0x880D2001,  PCH_H = M2_SKT2_CFG2                              ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_I14 : !expand { GPIO_TMPL : [ GPP_I14,  0x05148DA1,  0x080E0601,  PCH_H = M2_SKT2_CFG3                              ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J00 : !expand { GPIO_TMPL : [ GPP_J00,  0x03502381,  0x89002001,  PCH_H = CNV_PA_BLANKING                           ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J01 : !expand { GPIO_TMPL : [ GPP_J01,  0x03502385,  0x89012001,  PCH_H = N/A                                       ,  PCH_H = CPU_C10_GATE#                             ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J02 : !expand { GPIO_TMPL : [ GPP_J02,  0x03502381,  0x89022001,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J03 : !expand { GPIO_TMPL : [ GPP_J03,  0x03502381,  0x89032001,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J04 : !expand { GPIO_TMPL : [ GPP_J04,  0x03502385,  0x89042001,  PCH_H = CNV_BRI_DT                                ,  PCH_H = UART0B_RTS#                               ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J05 : !expand { GPIO_TMPL : [ GPP_J05,  0x03502385,  0x89052019,  PCH_H = CNV_BRI_RSP                               ,  PCH_H = UART0B_RXD                                ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J06 : !expand { GPIO_TMPL : [ GPP_J06,  0x03502385,  0x89062001,  PCH_H = CNV_RGI_DT                                ,  PCH_H = UART0B_TXD                                ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J07 : !expand { GPIO_TMPL : [ GPP_J07,  0x03502385,  0x89072019,  PCH_H = CNV_RGI_RSP                               ,  PCH_H = UART0B_CTS#                               ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J08 : !expand { GPIO_TMPL : [ GPP_J08,  0x03502381,  0x89082001,  PCH_H = CNV_M-                                    ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J09 : !expand { GPIO_TMPL : [ GPP_J09,  0x03502281,  0x89092001,  PCH_H = CNV_M-                                    ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J10 : !expand { GPIO_TMPL : [ GPP_J10,  0x0500E2E1,  0x090A0001,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_J11 : !expand { GPIO_TMPL : [ GPP_J11,  0x03502383,  0x890B2009,  PCH_H = A4WP_PRESENT                              ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K00 : !expand { GPIO_TMPL : [ GPP_K00,  0x050005E1,  0x0A000001,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K01 : !expand { GPIO_TMPL : [ GPP_K01,  0x03506281,  0x8A012017,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K02 : !expand { GPIO_TMPL : [ GPP_K02,  0x050005E1,  0x0A020001,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K03 : !expand { GPIO_TMPL : [ GPP_K03,  0x05148DA1,  0x0A030619,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K04 : !expand { GPIO_TMPL : [ GPP_K04,  0x050022E1,  0x0A040001,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K05 : !expand { GPIO_TMPL : [ GPP_K05,  0x050005E1,  0x0A050001,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K06 : !expand { GPIO_TMPL : [ GPP_K06,  0x050005E1,  0x0A060201,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K07 : !expand { GPIO_TMPL : [ GPP_K07,  0x050005E1,  0x0A070001,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K08 : !expand { GPIO_TMPL : [ GPP_K08,  0x050062E1,  0x0A080001,  PCH_H = Reserved                                  ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K09 : !expand { GPIO_TMPL : [ GPP_K09,  0x03502383,  0x8A092001,  PCH_H = Reserved                                  ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K10 : !expand { GPIO_TMPL : [ GPP_K10,  0x03506281,  0x8A0A2001,  PCH_H = Reserved                                  ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K11 : !expand { GPIO_TMPL : [ GPP_K11,  0x03502383,  0x8A0B2001,  PCH_H = Reserved                                  ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K12 : !expand { GPIO_TMPL : [ GPP_K12,  0x05348DA1,  0x0A0C0601,  PCH_H = GSXDOUT                                   ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K13 : !expand { GPIO_TMPL : [ GPP_K13,  0x050062E1,  0x0A0D0001,  PCH_H = GSXSLOAD                                  ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K14 : !expand { GPIO_TMPL : [ GPP_K14,  0x030022E1,  0x0A0E0001,  PCH_H = GSXDIN                                    ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K15 : !expand { GPIO_TMPL : [ GPP_K15,  0x030022E1,  0x0A0F0001,  PCH_H = GSXSRESET#                                ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K16 : !expand { GPIO_TMPL : [ GPP_K16,  0x050022E1,  0x0A100001,  PCH_H = GSXCLK                                    ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K17 : !expand { GPIO_TMPL : [ GPP_K17,  0x050062E1,  0x0A110001,  PCH_H = ADR_COMPLETE                              ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K18 : !expand { GPIO_TMPL : [ GPP_K18,  0x050005E1,  0x0A120001,  PCH_H = NMI#                                      ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K19 : !expand { GPIO_TMPL : [ GPP_K19,  0x03502381,  0x8A132001,  PCH_H = SMI#                                      ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K20 : !expand { GPIO_TMPL : [ GPP_K20,  0x050005E1,  0x0A140001,  PCH_H = Reserved                                  ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K21 : !expand { GPIO_TMPL : [ GPP_K21,  0x050005E1,  0x0A150001,  PCH_H = Reserved                                  ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K22 : !expand { GPIO_TMPL : [ GPP_K22,  0x05506281,  0x8A162001,  PCH_H = IMGCLKOUT0                                ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_K23 : !expand { GPIO_TMPL : [ GPP_K23,  0x050062E1,  0x0A170001,  PCH_H = IMGCLKOUT1                                ,  PCH_H = N/A                                       ,  PCH_H = N/A                                       ,  PCH_H = N/A ] }
+    - GPIO_GPP_d00 : !expand { GPIO_TMPL : [ GPP_d00,  0x07502383,  0x8B002001,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d01 : !expand { GPIO_TMPL : [ GPP_d01,  0x07502383,  0x8B01201F,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d02 : !expand { GPIO_TMPL : [ GPP_d02,  0x07502383,  0x8B02201F,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d03 : !expand { GPIO_TMPL : [ GPP_d03,  0x07502383,  0x8B032019,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d04 : !expand { GPIO_TMPL : [ GPP_d04,  0x07502283,  0x8B042001,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d05 : !expand { GPIO_TMPL : [ GPP_d05,  0x07502283,  0x8B052001,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d06 : !expand { GPIO_TMPL : [ GPP_d06,  0x07502283,  0x8B062001,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d07 : !expand { GPIO_TMPL : [ GPP_d07,  0x07502281,  0x8B072001,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d08 : !expand { GPIO_TMPL : [ GPP_d08,  0x07502383,  0x8B082001,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d09 : !expand { GPIO_TMPL : [ GPP_d09,  0x07502283,  0x8B092001,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d10 : !expand { GPIO_TMPL : [ GPP_d10,  0x07502283,  0x8B0A2001,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_d11 : !expand { GPIO_TMPL : [ GPP_d11,  0x07502283,  0x8B0B2001,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+    - GPIO_GPP_PEC : !expand { GPIO_TMPL : [ GPP_PEC,  0x00000000,  0x8C040009,  N/A                                               ,  N/A                                               ,  N/A                                               ,  N/A ] }
+  - $ACTION      :
+      page         : PLT_PCIE_CONFIG:SIL:"PCIE Config"
+  - $ACTION      :
+      page         : PLT_PCIE_RP_FEAT:PLT_PCIE_CONFIG:"PCIE RP Config"
+  - $ACTION      :
+      page         : PLT_PCIE_CLK_FEAT:PLT_PCIE_CONFIG:"PCIE Clock Config"
+  - PCIE_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ PCIE_CFG_DATA, 0x302, 0, 0 ] }
+    - PCIERP_PERPORT_0   : !expand { PCIERP_PERPORT_TMPL : [ 0  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_1   : !expand { PCIERP_PERPORT_TMPL : [ 1  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_2   : !expand { PCIERP_PERPORT_TMPL : [ 2  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_3   : !expand { PCIERP_PERPORT_TMPL : [ 3  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_4   : !expand { PCIERP_PERPORT_TMPL : [ 4  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_5   : !expand { PCIERP_PERPORT_TMPL : [ 5  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_6   : !expand { PCIERP_PERPORT_TMPL : [ 6  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_7   : !expand { PCIERP_PERPORT_TMPL : [ 7  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_8   : !expand { PCIERP_PERPORT_TMPL : [ 8  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_9   : !expand { PCIERP_PERPORT_TMPL : [ 9  ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_10  : !expand { PCIERP_PERPORT_TMPL : [ 10 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_11  : !expand { PCIERP_PERPORT_TMPL : [ 11 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_12  : !expand { PCIERP_PERPORT_TMPL : [ 12 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_13  : !expand { PCIERP_PERPORT_TMPL : [ 13 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_14  : !expand { PCIERP_PERPORT_TMPL : [ 14 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_15  : !expand { PCIERP_PERPORT_TMPL : [ 15 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_16  : !expand { PCIERP_PERPORT_TMPL : [ 16 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_17  : !expand { PCIERP_PERPORT_TMPL : [ 17 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_18  : !expand { PCIERP_PERPORT_TMPL : [ 18 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_19  : !expand { PCIERP_PERPORT_TMPL : [ 19 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_20  : !expand { PCIERP_PERPORT_TMPL : [ 20 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_21  : !expand { PCIERP_PERPORT_TMPL : [ 21 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_22  : !expand { PCIERP_PERPORT_TMPL : [ 22 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIERP_PERPORT_23  : !expand { PCIERP_PERPORT_TMPL : [ 23 ,  0x8000FFAA003C003C1003100326758404 ] }
+    - PCIE_PER_CLK_0     : !expand { PCIE_PER_CLK_TMPL : [ 0    ,  0x00008000 ] }
+    - PCIE_PER_CLK_1     : !expand { PCIE_PER_CLK_TMPL : [ 1    ,  0x00008001 ] }
+    - PCIE_PER_CLK_2     : !expand { PCIE_PER_CLK_TMPL : [ 2    ,  0x00008002 ] }
+    - PCIE_PER_CLK_3     : !expand { PCIE_PER_CLK_TMPL : [ 3    ,  0x00008003 ] }
+    - PCIE_PER_CLK_4     : !expand { PCIE_PER_CLK_TMPL : [ 4    ,  0x00008004 ] }
+    - PCIE_PER_CLK_5     : !expand { PCIE_PER_CLK_TMPL : [ 5    ,  0x00008005 ] }
+    - PCIE_PER_CLK_6     : !expand { PCIE_PER_CLK_TMPL : [ 6    ,  0x00008006 ] }
+    - PCIE_PER_CLK_7     : !expand { PCIE_PER_CLK_TMPL : [ 7    ,  0x00008007 ] }
+    - PCIE_PER_CLK_8     : !expand { PCIE_PER_CLK_TMPL : [ 8    ,  0x00008008 ] }
+    - PCIE_PER_CLK_9     : !expand { PCIE_PER_CLK_TMPL : [ 9    ,  0x00008009 ] }
+    - PCIE_PER_CLK_10    : !expand { PCIE_PER_CLK_TMPL : [ 10   ,  0x0000800A ] }
+    - PCIE_PER_CLK_11    : !expand { PCIE_PER_CLK_TMPL : [ 11   ,  0x0000800B ] }
+    - PCIE_PER_CLK_12    : !expand { PCIE_PER_CLK_TMPL : [ 12   ,  0x0000800C ] }
+    - PCIE_PER_CLK_13    : !expand { PCIE_PER_CLK_TMPL : [ 13   ,  0x0000800D ] }
+    - PCIE_PER_CLK_14    : !expand { PCIE_PER_CLK_TMPL : [ 14   ,  0x0000800E ] }
+    - PCIE_PER_CLK_15    : !expand { PCIE_PER_CLK_TMPL : [ 15   ,  0x0000800F ] }
+  - MEMORY_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ MEMORY_CFG_DATA, 0x200, 0, 0 ] }
+    - SpdAddressTable :
+        page         : MEM
+        name         : Spd Address Table
+        type         : EditNum, HEX, (0x00,0xFFFFFFFF)
+        help         : >
+                       Specify SPD Address table for CH0D0/CH0D1/CH1D0&CH1D1. MemorySpdPtr will be used if SPD Address is 00
+        length       : 0x04
+        value        :  0x0, 0x0, 0x0, 0x0
+    - SPD_00       : !expand { SPD_TMPL : [ 0, 0 ,  0x1 ] }
+    - SPD_01       : !expand { SPD_TMPL : [ 0, 1 ,  0x0 ] }
+    - SPD_10       : !expand { SPD_TMPL : [ 1, 0 ,  0x1 ] }
+    - SPD_11       : !expand { SPD_TMPL : [ 1, 1 ,  0x0 ] }
+    - DqByteMapCh0 :
+        name         : Dq Byte Map CH0
+        type         : Table
+        option       : >
+                       0:1:HEX, 1:1:HEX, 2:1:HEX, 3:1:HEX, 4:1:HEX, 5:1:HEX, 6:1:HEX, 7:1:HEX,
+                       8:1:HEX, 9:1:HEX, A:1:HEX, B:1:HEX
+        help         : >
+                       Dq byte mapping between CPU and DRAM, Channel 0- board-dependent
+        length       : 0xC
+        value        :  0x0F, 0xF0, 0x00, 0xF0, 0x0F, 0xF0, 0x0F, 0x00, 0xFF, 0x00, 0xFF, 0x00
+    - DqByteMapCh1 :
+        name         : Dq Byte Map CH1
+        type         : Table
+        option       : >
+                       0:1:HEX, 1:1:HEX, 2:1:HEX, 3:1:HEX, 4:1:HEX, 5:1:HEX, 6:1:HEX, 7:1:HEX,
+                       8:1:HEX, 9:1:HEX, A:1:HEX, B:1:HEX
+        help         : >
+                       Dq byte mapping between CPU and DRAM, Channel 0- board-dependent
+        length       : 0xC
+        value        :  0x33, 0xCC, 0x00, 0xCC, 0x33, 0xCC, 0x33, 0x00, 0xFF, 0x00, 0xFF, 0x00
+    - DqsMapCpu2DramCh0 :
+        name         : Dqs Map CPU to DRAM CH 0
+        type         : EditNum, HEX, (0x00,0xFFFFFFFFFFFFFFFF)
+        help         : >
+                       Set Dqs mapping relationship between CPU and DRAM, Channel 0- board-dependent
+        length       : 0x08
+        value        : 0, 1, 3, 2, 4, 5, 6, 7
+    - DqsMapCpu2DramCh1 :
+        name         : Dqs Map CPU to DRAM CH 1
+        type         : EditNum, HEX, (0x00,0xFFFFFFFFFFFFFFFF)
+        help         : >
+                       Set Dqs mapping relationship between CPU and DRAM, Channel 1- board-dependent
+        length       : 0x08
+        value        : 1, 0, 4, 5, 2, 3, 6, 7
+    - DqPinsInterleaved :
+        name         : Dqs Pins Interleaved Setting
+        type         : Combo
+        option       : $EN_DIS
+        help         : >
+                       Indicates DqPinsInterleaved setting- board-dependent
+        length       : 0x01
+        value        : 0x1
+    - MmioSize     :
+        name         : MMIO Size
+        type         : EditNum, HEX, (0,0xC00)
+        help         : >
+                       Size of MMIO space reserved for devices. non-Zero=size in MB
+        length       : 0x02
+        value        : 0x0
+    - RMT          :
+        name         : Rank Margin Tool
+        type         : Combo
+        option       : $EN_DIS
+        help         : >
+                       Enable/disable Rank Margin Tool.
+        length       : 0x01
+        value        : 0x01
+    - BdatEnable   :
+        name         : Generate BIOS Data ACPI Table
+        type         : Combo
+        option       : $EN_DIS
+        help         : >
+                       Enable- Generate BDAT for MRC RMT or SA PCIe data. Disable (Default)- Do not generate it
+        length       : 0x01
+        value        : 0x01
+    - BdatTestType :
+        name         : BdatTestType
+        type         : Combo
+        option       : 0:Rank Margin Tool, 1:Margin2D
+        help         : >
+                       Indicates the type of Memory Training data to populate into the BDAT ACPI table.
+        length       : 0x1
+        value        : 0x00
+    - FClkFrequency :
+        name         : Processor Early Power On Configuration FCLK setting
+        type         : Combo
+        option       : 0:800 MHz, 1- 1 GHz, 2- 400 MHz, 3- Reserved
+        help         : >
+                       <b>0- 800 MHz (ULT/ULX)</b>. <b>1- 1 GHz (DT/Halo)</b>. Not supported on ULT/ULX.- 2- 400 MHz. - 3- Reserved
+        length       : 0x01
+        value        : 0x00
+    - UserBd       :
+        name         : Board Type
+        type         : Combo
+        option       : 0:Mobile/Mobile Halo, 1:Desktop/DT Halo, 5:ULT/ULX/Mobile Halo, 7:UP Server
+        help         : >
+                       MrcBoardType, Options are 0=Mobile/Mobile Halo, 1=Desktop/DT Halo, 5=ULT/ULX/Mobile Halo, 7=UP Server
+        length       : 0x01
+        value        : 0x05
+    - DualDpc      :
+        name         : Dual Dimm Per Channel Board Type
+        type         : Combo
+        option       : 0:1DPC, 1:2DPC
+        help         : >
+                       Option to indicate if Board Layout includes One/Two DIMMs per channel. This is used to limit maximum frequency for some SKUs.
+        length       : 0x01
+        value        : 0x00
+    - PchTraceHubMode :
+        name         : PCH Trace Hub Mode
+        type         : Combo
+        option       : 0- Disable, 1- Target Debugger Mode, 2- Host Debugger Mode
+        help         : >
+                       Select 'Host Debugger' if Trace Hub is used with host debugger tool or 'Target Debugger' if Trace Hub is used by target debugger software or 'Disable' trace hub functionality.
+        length       : 0x01
+        value        : 0x00
+    - PlatformDebugConsent :
+        name         : Platform Debug Consent
+        type         : Combo
+        option       : 0:Disabled, 1:Enabled (DCI OOB+[DbC]), 2:Enabled (DCI OOB), 3:Enabled (USB3 DbC), 4:Enabled (XDP/MIPI60), 5:Enabled (USB2 DbC)
+        help         : >
+                       To 'opt-in' for debug, please select 'Enabled' with the desired debug probe type. Enabling this BIOS option may alter the default value of other debug-related BIOS options. Note- DCI OOB (aka BSSB) uses CCA probe; [DCI OOB+DbC] and [USB2 DbC] have the same setting
+        length       : 0x01
+        value        : 0x00
+    - MemRsvd      :
+        length       : 0x01
+        value        : 0x00
+  - $ACTION      :
+      page         : MEM_SPD:MEM:"MEM SPD"
+  - MEM_SPD0_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ MEM_SPD0_CFG_DATA, 0x8F0, 0, 0 ] }
+    - MemorySpdPtr0 :
+        name         : Memory SPD Data 0
+        type         : Table
+        option       : >
+                       0:1:HEX, 1:1:HEX, 2:1:HEX, 3:1:HEX, 4:1:HEX, 5:1:HEX, 6:1:HEX, 7:1:HEX,
+                       8:1:HEX, 9:1:HEX, A:1:HEX, B:1:HEX, C:1:HEX, D:1:HEX, E:1:HEX, F:1:HEX
+        help         : >
+                       Pointer to SPD data in Memory
+        length       : 0x200
+        value        :  0x23, 0x11, 0x0C, 0x03, 0x85, 0x21, 0x00, 0x08, 0x00, 0x60, 0x00, 0x03, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00, 0x07, 0x0D, 0xF8, 0x0F, 0x00, 0x00, 0x6E, 0x6E, 0x6E, 0x11, 0x00, 0x6E, 0xF0, 0x0A, 0x20, 0x08, 0x00, 0x05, 0x00, 0xA8, 0x1B, 0x28, 0x28, 0x00, 0x78, 0x00, 0x14, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x36, 0x0B, 0x35, 0x16, 0x36, 0x0B, 0x35, 0x00, 0x00, 0x16, 0x36, 0x0B, 0x35, 0x16, 0x36, 0x0B, 0x35, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x9C, 0xB5, 0x00, 0x00, 0x00, 0x00, 0xE7, 0xD6, 0x89, 0x02, 0x0F, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0xE2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xAD, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x4D, 0x41, 0x41, 0x35, 0x31, 0x53, 0x36, 0x41, 0x4D, 0x52, 0x36, 0x4E, 0x2D, 0x55, 0x48, 0x20, 0x20, 0x20, 0x20, 0x00, 0x80, 0xAD, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xDD, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+  - MEM_SPD1_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ MEM_SPD1_CFG_DATA, 0x8F1, 0, 0 ] }
+    - MemorySpdPtr1 :
+        name         : Memory SPD Data 1
+        type         : Table
+        option       : >
+                       0:1:HEX, 1:1:HEX, 2:1:HEX, 3:1:HEX, 4:1:HEX, 5:1:HEX, 6:1:HEX, 7:1:HEX,
+                       8:1:HEX, 9:1:HEX, A:1:HEX, B:1:HEX, C:1:HEX, D:1:HEX, E:1:HEX, F:1:HEX
+        help         : >
+                       Pointer to SPD data in Memory
+        length       : 0x200
+        value        :  0x23, 0x11, 0x0C, 0x03, 0x45, 0x21, 0x00, 0x08, 0x00, 0x60, 0x00, 0x03, 0x02, 0x03, 0x80, 0x00, 0x00, 0x00, 0x07, 0x0D, 0xF8, 0x0F, 0x00, 0x00, 0x6E, 0x6E, 0x6E, 0x11, 0x00, 0x6E, 0xF0, 0x0A, 0x20, 0x08, 0x00, 0x05, 0x00, 0xF0, 0x2B, 0x34, 0x28, 0x00, 0x78, 0x00, 0x14, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x36, 0x0B, 0x35, 0x16, 0x36, 0x0B, 0x35, 0x00, 0x00, 0x16, 0x36, 0x0B, 0x35, 0x16, 0x36, 0x0B, 0x35, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x9C, 0xB5, 0x00, 0x00, 0x00, 0x00, 0xE7, 0xD6, 0xB8, 0x4A, 0x0F, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0xE2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0xF7, 0x4B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x34, 0x53, 0x53, 0x31, 0x32, 0x31, 0x36, 0x31, 0x53, 0x48, 0x32, 0x34, 0x41, 0x2D, 0x42, 0x20, 0x20, 0x20, 0x20, 0x00, 0x80, 0xCE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+  - BOOT_OPTION_0  : !expand { BOOT_OPTION_TMPL : [ 0 ,   0    ,   0 ,    5   ,   0   ,    0  ,     0 ,     0 , 'iasimage.bin' ] }
+  - BOOT_OPTION_1  : !expand { BOOT_OPTION_TMPL : [ 1 ,   0    ,   0 ,    0   ,   0   ,    2  ,     0 ,     0 , 'iasimage.bin' ] }
+  - BOOT_OPTION_2  : !expand { BOOT_OPTION_TMPL : [ 2 ,   0    ,   0 ,    2   ,   0   ,    0  ,     0 ,     0 , 'iasimage.bin' ] }
+  - SILICON_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ SILICON_CFG_DATA, 0x600, 0, 0 ] }
+    - ECEnable     :
+        name         : Enable EC Device
+        type         : Combo
+        option       : $EN_DIS
+        help         : >
+                       Enable/disable EC
+        length       : 0x01
+        value        : 0x01
+    - DebugInterfaceEnable :
+        name         : Enable or Disable processor debug features
+        type         : Combo
+        option       : $EN_DIS
+        help         : >
+                       Enable or Disable processor debug features; <b>0- Disable</b>; 1- Enable.
+        length       : 0x01
+        value        : 0x00
+    - EnableLegacySerial :
+        name         : Enable or Disable legacy serial port expose to OS
+        type         : Combo
+        option       : $EN_DIS
+        help         : >
+                       Enable or Disable legacy serial port expose to OS; <b>0- Disable</b>; 1- Enable.
+        length       : 0x01
+        value        : 0x00
+    - $ACTION      :
+        page         : PSEL:SIL:"Payload Selection GPIO"
+    - PayloadSelGpio :
+      - $STRUCT      :
+          page         : PSEL
+          name         : GPIO pin for switching payload
+          help         : >
+                         specify GPIO PIN number to read and switch payloads
+          length       : 0x02
+          value        : 0
+      - Group        :
+          name         : Pad Group
+          type         : Combo
+          option       : 0x0- GROUP_A, 0x1- GROUP_B, 0x2- GROUP_C, 0x3- GROUP_D, 0x4- GROUP_E, 0x5- GROUP_F, 0x6- GROUP_G, 0x7- GROUP_H, 0x8- GROUP_I, 0x9 - GROUP_J, 0xA- GROUP_K
+          help         : >
+                         Specify Pad Group
+          length       : 4bW
+      - PinNum       :
+          name         : Pin Number
+          type         : EditNum, INT, (0,24)
+          help         : >
+                         Specify Pin Number
+          length       : 5bW
+      - Rsvd1        :
+          name         : Reserved
+          type         : Reserved
+          length       : 6bW
+      - Enable       :
+          name         : Payload Selection Pin Enable
+          type         : Combo
+          option       : $EN_DIS
+          help         : >
+                         Enable/Disable this pin for payload selection.
+          length       : 1bW
+    - SiliconRsvd  :
+        length       : 0x03
+        value        : 0x00
+  - $ACTION      :
+      page         : GPU_CFG:SIL:"Graphic & Display"
+  - GPU_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ GPU_CFG_DATA, 0x308, 0, 0 ] }
+    - IgdDvmt50PreAlloc :
+        name         : Internal Graphics Pre-allocated Memory
+        type         : Combo
+        option       : >
+                       0x00:0MB, 0x01:32MB, 0x02:64MB, 0x03:96MB, 0x04:128MB, 0x05:160MB, 0xF0:4MB, 0xF1:8MB, 0xF2:12MB, 0xF3:16MB, 0xF4:20MB,
+                       0xF5:24MB, 0xF6:28MB, 0xF7:32MB, 0xF8:36MB, 0xF9:40MB, 0xFA:44MB, 0xFB:48MB, 0xFC:52MB, 0xFD:56MB, 0xFE:60MB
+        help         : >
+                       Size of memory preallocated for internal graphics.
+        length       : 0x01
+        value        : 0x01
+    - ApertureSize :
+        name         : Aperture Size
+        type         : Combo
+        option       : 0:128 MB, 1:256 MB, 2:512 MB
+        help         : >
+                       Select the Aperture Size.
+        length       : 0x01
+        value        : 0x01
+    - InternalGfx  :
+        name         : Internal Graphics
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable/disable internal graphics.
+        length       : 0x01
+        value        : 0x01
+    - PrimaryDisplay :
+        name         : Selection of the primary display device
+        type         : Combo
+        option       : 0:iGFX, 1:PEG, 2:PCIe Graphics on PCH, 3:AUTO, 4:Switchable Graphics
+        help         : >
+                       0=iGFX, 1=PEG, 2=PCIe Graphics on PCH, 3(Default)=AUTO, 4=Switchable Graphics
+        length       : 0x01
+        value        : 0x3
+    - GttSize      :
+        name         : Selection of iGFX GTT Memory size
+        type         : Combo
+        option       : 1:2MB, 2:4MB, 3:8MB
+        help         : >
+                       1=2MB, 2=4MB, 3=8MB
+        length       : 0x02
+        value        : 0x3
+    - DdiPortEdp   :
+        name         : eDP device
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable or disable
+        length       : 0x01
+        value        : 0x1
+    - DdiPortBHpd  :
+        name         : HPD of DDI port B
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable or disable
+        length       : 0x01
+        value        : 0x1
+    - DdiPortCHpd  :
+        name         : HPD of DDI port C
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable or disable
+        length       : 0x01
+        value        : 0x1
+    - DdiPortDHpd  :
+        name         : HPD of DDI port D
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable or disable
+        length       : 0x01
+        value        : 0x1
+    - DdiPortFHpd  :
+        name         : HPD of DDI port F
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable or disable
+        length       : 0x01
+        value        : 0x1
+    - DdiPortBDdc  :
+        name         : DDC of DDI port B
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable or disable
+        length       : 0x01
+        value        : 0x1
+    - DdiPortCDdc  :
+        name         : DDC of DDI port C
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable or disable
+        length       : 0x01
+        value        : 0x1
+    - DdiPortDDdc  :
+        name         : DDC of DDI port D
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable or disable
+        length       : 0x01
+        value        : 0x1
+    - DdiPortFDdc  :
+        name         : DDC of DDI port F
+        type         : Combo
+        option       : 1:Enable, 0:Disable
+        help         : >
+                       Enable or disable
+        length       : 0x01
+        value        : 0x0
+    - Dummy        :
+        length       : 0x01
+        value        : 0x0
+  - CAPSULE_INFO_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ CAPSULE_INFO_CFG_DATA, 0x080, 0, 0 ] }
+    - DevType      :
+        name         : DevType
+        type         : Combo
+        option       : 0:SATA, 1:SD, 2:EMMC, 3:UFS, 4:SPI, 5:USB, 6:NVME, 7:MAX
+        help         : >
+                       Specify boot device
+        length       : 0x01
+        value        : 5
+    - DevInstance  :
+        name         : Boot Device instance
+        type         : Combo
+        option       : 0:Device 0, 1:Device 1, 2:Device 2, 3:Device 3
+        help         : >
+                       Specify boot device instance when then are multple instances
+        order        : 0000.0000
+        length       : 0x01
+        value        : 0
+    - Reserved     :
+        length       : 0x03
+        value        : 0
+    - HwPart       :
+        name         : Hardware Partition
+        type         : Combo
+        option       : 0:User Partition, 1:Boot Partition 1, 2:Boot Partition 2
+        help         : >
+                       Specify hardware partition number
+        length       : 0x01
+        value        : 0
+    - SwPart       :
+        name         : Software Partition
+        type         : EditNum, INT, (0,127)
+        help         : >
+                       Specify software partition number
+        length       : 0x01
+        value        : 0
+    - FsType       :
+        name         : File System Type
+        type         : Combo
+        option       : 0:FAT, 1:EXT2, 2:AUTO, 3:RAW
+        help         : >
+                       Image is loaded from file system instead of raw data
+        length       : 0x01
+        value        : 2
+    - FileName     :
+        name         : Capsule File Name
+        type         : EditText
+        help         : >
+                       Specify file name of capsule image  (16-byte max length)
+        length       : 0x10
+        value        : 'FwuImage.bin'
+    - LbaAddr      :
+        name         : LBA address for capsule image)
+        type         : EditNum, HEX, (0,0xFFFFFFFF)
+        help         : >
+                       specify LBA address where to find capsule image
+        length       : 0x04
+        value        : 0
+  - $ACTION      :
+      page         : FEATURES:PLT:"Features"
+  - FEATURES_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ FEATURES_CFG_DATA, 0x310, 0, 0 ] }
+    - FEATURES     : !expand { FEATURES_TMPL : [  0x0000001F ] }
+  - $ACTION      :
+      page         : PSD:SEC:"PSD"
+  - PSD_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ PSD_CFG_DATA, 0x800, 0, 0 ] }
+    - EnablePsd    :
+        name         : Platform Security Discovery (PSD)
+        type         : Combo
+        option       : 0:Disabled, 1:Enabled
+        help         : >
+                       Enable/Disable Platform Security Discovery (PSD)
+        length       : 0x04
+        value        : 0x0
+  - $ACTION      :
+      page         : SGX:SEC:"SGX"
+  - SGX_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ SGX_CFG_DATA, 0x500, 0, 0 ] }
+    - EnableSgx    :
+        name         : Software Guard eXtensions (SGX)
+        type         : Combo
+        option       : 0:Disabled, 1:Enabled
+        help         : >
+                       Enable/Disable Software Guard eXtensions (SGX).
+        length       : 0x01
+        value        : 0x0
+    - EpochUpdate  :
+        condition    : $EnableSgx != 0
+        name         : Select Owner EPOCH input type
+        type         : Combo
+        option       : 0:No Change in Owner EPOCHs, 1:Manual User Defined Owner EPOCHs
+        help         : >
+                       There are two Owner EPOCH modes (Each EPOCH is 64bit)- no change in owner epoch and manually entered by user. After the user enters epoch values manually, the values will not be visible, for security reasons.
+        length       : 0x01
+        value        : 0x0
+    - SgxEpoch0    :
+        condition    : $EnableSgx != 0x0 and $EpochUpdate == 0x1
+        name         : Software Guard eXtensions Epoch 0
+        type         : EditNum, HEX, (0x0,0xFFFFFFFFFFFFFFFF)
+        length       : 0x8
+        value        : 0x553DFD8D5FA48F27
+    - SgxEpoch1    :
+        condition    : $EnableSgx != 0x0 and $EpochUpdate == 0x1
+        name         : Software Guard eXtensions Epoch 1
+        type         : EditNum, HEX, (0x0,0xFFFFFFFFFFFFFFFF)
+        length       : 0x8
+        value        : 0xD76767B9BE4BFDC1
+    - PrmrrSize    :
+        condition    : $EnableSgx == 0x1
+        name         : PRMRR Size
+        type         : Combo
+        option       : 0x2000000:32MB, 0x4000000:64MB, 0x8000000:128MB
+        help         : >
+                       Setting the PRMRR Size
+        length       : 0x04
+        value        : 0x4000000
+    - PaddingBytes :
+        length       : 0x02
+        value        : 0x0
+  - $ACTION      :
+      page         : PWR:SIL:"POWER"
+  - POWER_CFG_DATA :
+    - CfgHeader    : !expand { CFGHDR_TMPL : [ POWER_CFG_DATA, 0x610, 0, 0 ] }
+    - OneCoreRatioLimit :
+        name         : 1-Core Ratio Limit
+        type         : EditNum, HEX, (0,0xFF)
+        help         : >
+                       1-Core Ratio Limit- LFM to Fused, For overclocking part- LFM to 255. This 1-Core Ratio Limit Must be greater than or equal to 2-Core Ratio Limit, 3-Core Ratio Limit, 4-Core Ratio Limit, 5-Core Ratio Limit, 6-Core Ratio Limit, 7-Core Ratio Limit, 8-Core Ratio Limit. Range is 0 to 255
+        length       : 0x01
+        value        : 0x2C
+    - TwoCoreRatioLimit :
+        name         : 2-Core Ratio Limit
+        type         : EditNum, HEX, (0,0xFF)
+        help         : >
+                       LFM to Fused, For overclocking part- LFM to 255. This 2-Core Ratio Limit Must be Less than or equal to 1-Core Ratio Limit.Range is 0 to 255
+        length       : 0x01
+        value        : 0x2C
+    - ThreeCoreRatioLimit :
+        name         : 3-Core Ratio Limit
+        type         : EditNum, HEX, (0,0xFF)
+        help         : >
+                       LFM to Fused, For overclocking part- LFM to 255. This 3-Core Ratio Limit Must be Less than or equal to 1-Core Ratio Limit.Range is 0 to 255
+        length       : 0x01
+        value        : 0x2A
+    - FourCoreRatioLimit :
+        name         : 4-Core Ratio Limit
+        type         : EditNum, HEX, (0,0xFF)
+        help         : >
+                       LFM to Fused, For overclocking part- LFM to 255. This 4-Core Ratio Limit Must be Less than or equal to 1-Core Ratio Limit.Range is 0 to 255
+        length       : 0x01
+        value        : 0x2A
+    - FiveCoreRatioLimit :
+        name         : 5-Core Ratio Limit
+        type         : EditNum, HEX, (0,0xFF)
+        help         : >
+                       LFM to Fused, For overclocking part- LFM to 255. This 5-Core Ratio Limit Must be Less than or equal to 1-Core Ratio Limit.Range is 0 to 255 0x0:0xFF
+        length       : 0x01
+        value        : 0
+    - SixCoreRatioLimit :
+        name         : 6-Core Ratio Limit
+        type         : EditNum, HEX, (0,0xFF)
+        help         : >
+                       LFM to Fused, For overclocking part- LFM to 255. This 6-Core Ratio Limit Must be Less than or equal to 1-Core Ratio Limit.Range is 0 to 255 0x0:0xFF
+        length       : 0x01
+        value        : 0
+    - SevenCoreRatioLimit :
+        name         : 7-Core Ratio Limit
+        type         : EditNum, HEX, (0,0xFF)
+        help         : >
+                       LFM to Fused, For overclocking part- LFM to 255. This 7-Core Ratio Limit Must be Less than or equal to 1-Core Ratio Limit.Range is 0 to 255 0x0:0xFF
+        length       : 0x01
+        value        : 0
+    - EightCoreRatioLimit :
+        name         : 8-Core Ratio Limit
+        type         : EditNum, HEX, (0,0xFF)
+        help         : >
+                       LFM to Fused, For overclocking part- LFM to 255. This 8-Core Ratio Limit Must be Less than or equal to 1-Core Ratio Limit.Range is 0 to 255 0x0:0xFF
+        length       : 0x01
+        value        : 0
+    - DmiTS0TW     :
+        name         : Thermal Sensor 0 Target Width
+        type         : Combo
+        option       : 0:x1, 1:x2, 2:x4, 3:x8, 4:x16
+        help         : >
+                       DMT thermal sensor suggested representative values.
+        length       : 0x01
+        value        : 0x3
+    - DmiTS1TW     :
+        name         : Thermal Sensor 1 Target Width
+        type         : Combo
+        option       : 0:x1, 1:x2, 2:x4, 3:x8, 4:x16
+        help         : >
+                       DMT thermal sensor suggested representative values.
+        length       : 0x01
+        value        : 0x2
+    - DmiTS2TW     :
+        name         : Thermal Sensor 2 Target Width
+        type         : Combo
+        option       : 0:x1, 1:x2, 2:x4, 3:x8, 4:x16
+        help         : >
+                       DMT thermal sensor suggested representative values.
+        length       : 0x01
+        value        : 0x1
+    - MemoryThermalMgmt :
+        name         : Memory Thermal Management
+        type         : Combo
+        option       : 0:Disabled, 1:Enabled
+        help         : >
+                       Enable Memory Thermal Management
+        length       : 0x01
+        value        : 0x1
