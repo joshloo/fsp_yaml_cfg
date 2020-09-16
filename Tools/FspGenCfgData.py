@@ -932,7 +932,7 @@ EndList
                                     raise Exception ("ERROR: Unrecoginized directive for line '%s'" % DscLine)
 
             if not Handle:
-                SkipLines += 1
+                del self._DscLines[-1]
                 continue
 
             if IsDefSect:
