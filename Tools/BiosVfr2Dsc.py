@@ -2,6 +2,7 @@ import sys
 import re
 
 str_db = []
+var_db = {}
 
 def load_hpk (hpk_file):
     fd = open (hpk_file, 'rb')
@@ -212,6 +213,8 @@ def build_pages (root, level = 0):
 
 
 def build_cfgs (root, level = 0):
+    global var_db
+
     if root is None:
         return
 
@@ -240,7 +243,17 @@ def build_cfgs (root, level = 0):
           name = name.replace ('[', '_')
           name = name.replace (']', '')
 
-          print ('  gCfgData.%s  | * | 0x01 | 0x%x' % (name, default))
+          if name not in var_db:
+              parts = name.split('_')
+              if len(parts) == 2:
+                  dlen, dnum = var_db[parts[0]]
+              else:
+                  raise Exception ("Unknown size for '%s' !" % name)
+          else:
+              dlen, dnum = var_db[name]
+              dlen = dlen * dnum
+
+          print ('  gCfgData.%s  | * | 0x%02X | 0x%x' % (name, dlen, default))
 
 
         level += 1
@@ -257,15 +270,41 @@ def build_root_pages (root, level = 0):
     for idx, child in enumerate(root['child'][0]['child']):
         build_cfgs  (child)
 
+def parse_vars (inc_file):
+    fd = open (inc_file, 'r')
+    lines = fd.readlines()
+    fd.close()
+
+    vars = dict()
+    for line in lines:
+        line = line.strip()
+        if not line.endswith (';'):
+            continue
+        match = re.match ('(CHAR|UINT)(8|16|32|64)\s+(\w+)(\s*\[\s*(\d+)\s*\])?', line)
+        if not match:
+            continue
+
+        if  match.group(5) is None:
+            array_num = 1
+        else:
+            array_num = int (match.group(5))
+
+        item_size = int (match.group(2)) // 8
+        vars[match.group(3)] = (item_size, array_num)
+
+    return vars
+
+
 def usage():
     print ('\n'.join([
           "BiosVfr2Dsc Version 0.1",
           "Usage:",
-          "    BiosVfr2Dsc  HpkFile  CombinedVfrFile"
+          "    BiosVfr2Dsc  HpkDbFile  ComfinedVfrFile"
           ]))
 
 def main ():
     global str_db
+    global var_db
 
     if len(sys.argv) < 3:
         usage ()
@@ -274,9 +313,9 @@ def main ():
     hpk_file = sys.argv[1]
     vfr_file = sys.argv[2]
     str_db = load_hpk (hpk_file)
+    var_db = parse_vars (vfr_file)
 
     debug  = 0
-
     # debug
     if debug:
         for idx, i in enumerate (str_db):
