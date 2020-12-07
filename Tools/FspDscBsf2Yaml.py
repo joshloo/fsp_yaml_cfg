@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-## @ FspBsf2Dsc.py
+## @ FspDscBsf2Yaml.py
 # This script convert FSP BSF format into DSC format
 #
 # Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
