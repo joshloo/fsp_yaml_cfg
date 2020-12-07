@@ -20,7 +20,5 @@ The current tool supports the following features:
  - Patch FSP UPD binary
  - Generate FSP UPD delta
 
-
-
-
-
+To check out submodules, run 
+git clone --recursive https://github.com/joshloo/fsp_yaml_cfg.git

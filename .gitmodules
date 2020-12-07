@@ -1,3 +1,7 @@
 [submodule "IntelFsp"]
 	path = IntelFsp
 	url = https://github.com/intel/FSP
+
+[submodule "fspsdk"]
+	path = fspsdk
+	url = https://github.com/joshloo/fsp_yaml_cfg
