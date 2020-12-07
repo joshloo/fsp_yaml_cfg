@@ -14,6 +14,10 @@ FspDscBsf2Yaml DscFile|BsfFile  YamlFile
 that can be used by the **Config Editor** to provide a graphical user interface
 for manipulating settings in the UPD regions.
 
+Below is an example of how a YAML file looks like
+
+![YAML example](https://slimbootloader.github.io/_images/ConfigDefYaml.PNG)
+
 The following sections explain the use case.
 
 ## 1. FspDscBsf2Yaml.py DscFile YamlFile
@@ -173,8 +177,7 @@ Input:
 
 Output:
 
-```help         : >
-                       Stack base for FSP use. Default- 0xFEF16000```
+```help         : >   Stack base for FSP use. Default- 0xFEF16000```
 
 ###OPTION
 The **OPTION** command allows you to custom-define combo boxes and map integer
