@@ -4,4 +4,4 @@
 
 [submodule "fspsdk"]
 	path = fspsdk
-	url = https://github.com/joshloo/fsp_yaml_cfg
+	url = https://github.com/joshloo/fspsdk
