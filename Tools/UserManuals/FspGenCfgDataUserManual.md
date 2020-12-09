@@ -102,8 +102,9 @@ FspGenCfgData  GENDSC  DscFile  DscOutFile   [-D Macros]
 
 **DscOutFile** is the location where the simplified DSC description file will be stored.
 
-## 6. FspGenCfgData  GENHDR
-The **GENHDR** option creates a header file describing the configuration data.
+## 7. FspGenCfgData  GENHDR
+The **GENHDR** option takes the DSC description file with BSF syntax and creates a header file
+describing the configuration data.
 
 ```
 FspGenCfgData  GENHDR  DscFile[;DltFile]  HdrOutFile[;ComHdrOutFile]   [-D Macros]
