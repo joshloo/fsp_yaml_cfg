@@ -2265,16 +2265,16 @@ EndList
 
 def Usage():
     print ('\n'.join([
-          "GenCfgData Version 0.01",
+          "FspGenCfgData Version 0.01",
           "Usage:",
-          "    GenCfgData  GENINC  BinFile             IncOutFile   [-D Macros]",
-          "    GenCfgData  GENPKL  DscFile             PklOutFile   [-D Macros]",
-          "    GenCfgData  GENINC  DscFile[;DltFile]   IncOutFile   [-D Macros]",
-          "    GenCfgData  GENBIN  DscFile[;DltFile]   BinOutFile   [-D Macros]",
-          "    GenCfgData  GENBSF  DscFile[;DltFile]   BsfOutFile   [-D Macros]",
-          "    GenCfgData  GENDLT  DscFile[;AbsfFile]  DltOutFile   [-D Macros]",
-          "    GenCfgData  GENDSC  DscFile             DscOutFile   [-D Macros]",
-          "    GenCfgData  GENHDR  DscFile[;DltFile]   HdrOutFile[;ComHdrOutFile]   [-D Macros]"
+          "    FspGenCfgData  GENINC  BinFile             IncOutFile   [-D Macros]",
+          "    FspGenCfgData  GENPKL  DscFile             PklOutFile   [-D Macros]",
+          "    FspGenCfgData  GENINC  DscFile[;DltFile]   IncOutFile   [-D Macros]",
+          "    FspGenCfgData  GENBIN  DscFile[;DltFile]   BinOutFile   [-D Macros]",
+          "    FspGenCfgData  GENBSF  DscFile[;DltFile]   BsfOutFile   [-D Macros]",
+          "    FspGenCfgData  GENDLT  DscFile[;AbsfFile]  DltOutFile   [-D Macros]",
+          "    FspGenCfgData  GENDSC  DscFile             DscOutFile   [-D Macros]",
+          "    FspGenCfgData  GENHDR  DscFile[;DltFile]   HdrOutFile[;ComHdrOutFile]   [-D Macros]"
           ]))
 
 def Main():
