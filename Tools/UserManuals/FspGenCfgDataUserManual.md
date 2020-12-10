@@ -45,7 +45,7 @@ FspGenCfgData  GENINC  BinFile/DscFile[;DltFile]  IncOutFile  [-D Macros]
 ## 2. FspGenCfgData  GENPKL
 The **GENPKL** option takes the DSC file of a project and creates a Pickle file from the
 content of the description file. It constructs the pickle object that contains the
-configuration data so that it can be consumed by other Python scripts.
+configuration data so that it can be consumed by Python build scripts to reduce build time.
 
 ```
 FspGenCfgData  GENPKL  DscFile  PklOutFile  [-D Macros]
