@@ -3,7 +3,9 @@
 for code compilation with UPD as input, and generates Pickle file (**.PKL**), include
 file (**.INC**), Updateable Product Data, UPD binary (**.BIN**), Boot Settings File
 (**.BSF**), Delta file (**.DLT**), Platform Description File (**.DSC**) and header
-file (**.H**), all from an EDK II Platform Description (**DSC**) file.
+file (**.H**), all from an EDK II Platform Description (**DSC**) file. These output formats
+files are created and consumed by the build process of bootloaders and some can be
+consumed and configured through open source tools.
 
 #Synopsis
 ```
