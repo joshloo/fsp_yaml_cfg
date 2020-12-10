@@ -1,7 +1,10 @@
 #Name
 **FspDscBsf2Yaml.py** The python script that generates YAML file for
 the Boot Settings from an EDK II Platform Description (**DSC**) file
-or from a Boot Settings File (**BSF**).
+or from a Boot Settings File (**BSF**). It is created to help
+transitioning FSP Updateable Product Data (**UPD**) file format to
+new standardized YAML format so that it can be configured through
+open source tools.
 
 #Synopsis
 ```
@@ -23,8 +26,8 @@ The **DscFile** option is an input DSC file.
 
 The **YamlFile** option is an output YAML file.
 
-The script takes the DSC of a project file consisting BSF syntax and
-generates a YAML output file describing the boot settings.
+The script takes the FSP DSC file consisting BSF syntax and generates a YAML
+output file describing the boot settings.
 
 ## 2. FspDscBsf2Yaml.py BsfFile YamlFile
 
