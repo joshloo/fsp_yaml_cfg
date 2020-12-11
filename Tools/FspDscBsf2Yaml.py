@@ -16,7 +16,7 @@ from   collections import OrderedDict
 from   functools   import reduce
 from   datetime    import date
 
-from FspGenCfgData import CFspBsf2Dsc, CGenCfgData
+from GenCfgOpt import CFspBsf2Dsc, CGenCfgOpt
 
 __copyright_tmp__ = """## @file
 #
@@ -46,9 +46,9 @@ class CFspDsc2Yaml ():
         """
         Load and parse a DSC CFGDATA file.
         """
-        gen_cfg_data = CGenCfgData('FSP')
+        gen_cfg_data = CGenCfgOpt('FSP')
         if file_name.endswith('.dsc'):
-            if gen_cfg_data.ParseDscFile(file_name) != 0:
+            if gen_cfg_data.ParseDscFile(file_name, '') != 0:
                 raise Exception('DSC file parsing error !')
             if gen_cfg_data.CreateVarDict() != 0:
                 raise Exception('DSC variable creation error !')

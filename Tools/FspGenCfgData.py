@@ -782,13 +782,14 @@ EndList
 
         return AddBsfChildPageRecursive (self._CfgPageTree, Parent, Child)
 
-    def ParseDscFile (self, DscFile):
+    def ParseDscFile (self, DscFile, FvDir):
         self._DscLines    = []
         self._CfgItemList = []
         self._CfgPageDict = {}
         self._CfgBlkDict  = {}
         self._BsfTempDict = {}
         self._CfgPageTree = {'root' : []}
+        self._FvDir       = FvDir
 
         CfgDict = {}
 
@@ -2339,7 +2340,7 @@ def Main():
         with open(DscFile, "rb") as PklFile:
             GenCfgData.__dict__ = marshal.load(PklFile)
     else:
-        if GenCfgData.ParseDscFile(DscFile) != 0:
+        if GenCfgData.ParseDscFile(DscFile, '') != 0:
             raise Exception (GenCfgData.Error)
 
         #if GenCfgData.CheckCfgData() != 0:
